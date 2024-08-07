@@ -11,7 +11,7 @@ setup(
     description='Toolkit for deployment of soccer dribbling on the Unitree Go1.',
     install_requires=[
                       'params-proto==2.10.9',
-                      'gym==0.18.0',
+                      'gym==0.26.0',
                       'tqdm',
                       'matplotlib',
                       'numpy==1.23.5',
