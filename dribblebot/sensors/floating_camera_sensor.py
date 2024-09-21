@@ -15,7 +15,8 @@ class FloatingCameraSensor(Sensor):
 
     def set_position(self, target_loc=None, cam_distance=None):
         if cam_distance is None:
-            cam_distance = [0, -1.0, 1.0]
+            cam_distance = [0, -1.0, 1.0]   # TODO: camera location
+            # cam_distance = [0, -1.0, 0.0]
         if target_loc is None:
             bx, by, bz = self.env.root_states[0, 0], self.env.root_states[0, 1], self.env.root_states[0, 2]
             target_loc = [bx, by, bz]

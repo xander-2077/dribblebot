@@ -357,7 +357,6 @@ class LeggedRobot(BaseTask):
         self.pre_obs_buf = []   # 由sensors获取的观测
         for sensor in self.sensors:
             self.pre_obs_buf += [sensor.get_observation()]
-        breakpoint()
         self.pre_obs_buf = torch.reshape(torch.cat(self.pre_obs_buf, dim=-1), (self.num_envs, -1))
         self.obs_buf[:] = self.pre_obs_buf
 
@@ -1347,9 +1346,11 @@ class LeggedRobot(BaseTask):
 
         # create robot
         from dribblebot.robots.go1 import Go1
+        from dribblebot.robots.go2 import Go2
 
         robot_classes = {
             'go1': Go1,
+            'go2': Go2,
         }
 
         self.robot = robot_classes[self.cfg.robot.name](self)
@@ -1538,6 +1539,7 @@ class LeggedRobot(BaseTask):
         self.complete_video_frames = []
 
     def render(self, mode="rgb_array", target_loc=None, cam_distance=None):
+        cam_distance = [0, -1.0, 0.0]
         self.rendering_camera.set_position(target_loc, cam_distance)
         return self.rendering_camera.get_observation()
 
