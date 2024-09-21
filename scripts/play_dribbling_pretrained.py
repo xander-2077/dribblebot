@@ -18,6 +18,18 @@ def load_policy(logdir):
     adaptation_module = torch.jit.load(logdir + '/adaptation_module.jit', map_location='cpu')
 
     def policy(obs, info={}):
+        """
+        obs: 
+        - obs: shape (num_envs, 75)
+        - obs_history: shape (num_envs, 1125)   15步历史观测 75*15=1125
+        [consisting of the 15-step history of command ct, ball position bt, joint positions and velocities qt, d qt, gravity unit vector in the body frame gt, global body yaw ψt, and timing reference variables θ cmd t. 
+        The commands ct consist of the target ball velocities v cmd x, v cmd y in the global frame]
+        - privileged_obs: shape (num_envs, 6)
+
+        obs["obs_history"]: shape (num_envs, 1125)
+        latent: shape (num_envs, 6)
+        action: shape (num_envs, 12)
+        """
         i = 0
         latent = adaptation_module.forward(obs["obs_history"].to('cpu'))
         action = body.forward(torch.cat((obs["obs_history"].to('cpu'), latent), dim=-1))
@@ -122,6 +134,7 @@ def play_go1(headless=True):
 
     label = "improbableailab/dribbling/bvggoq26"
     env, policy = load_env(label, headless=headless)
+    # env: <HistoryWrapper<VelocityTrackingEasyEnv instance>>
 
     num_eval_steps = 500
     gaits = {"pronking": [0, 0, 0],

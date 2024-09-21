@@ -313,6 +313,17 @@ class LeggedRobot(BaseTask):
 
     def initialize_sensors(self):
         """ Initializes sensors
+        sensor_names:
+            "ObjectSensor",        # self.env.object_local_pos * self.env.cfg.obs_scales.ball_pos dim: 3
+            "OrientationSensor",   # self.env.projected_gravity dim: 3
+            "RCSensor",            # self.env.commands * self.env.commands_scale dim: 15?
+            "JointPositionSensor", # joint position  dim: 12
+            "JointVelocitySensor", # joint velocity  dim: 12
+            "ActionSensor",        # self.env.actions dim: 12
+            "ActionSensor",   # delay: 1  self.env.last_actions dim: 12
+            "ClockSensor",         # self.env.clock_inputs dim: 4
+            "YawSensor",           # dim: 1
+            "TimingSensor",        # self.env.gait_indices.unsqueeze(1) dim: 1
         """
         from dribblebot.sensors import ALL_SENSORS
         self.sensors = []
@@ -343,10 +354,10 @@ class LeggedRobot(BaseTask):
         """ Computes observations
         """
         # aggregate the sensor data
-        self.pre_obs_buf = []
+        self.pre_obs_buf = []   # 由sensors获取的观测
         for sensor in self.sensors:
             self.pre_obs_buf += [sensor.get_observation()]
-
+        breakpoint()
         self.pre_obs_buf = torch.reshape(torch.cat(self.pre_obs_buf, dim=-1), (self.num_envs, -1))
         self.obs_buf[:] = self.pre_obs_buf
 

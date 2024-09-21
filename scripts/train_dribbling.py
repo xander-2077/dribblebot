@@ -17,7 +17,7 @@ def train_go1(headless=True):
     config_go1(Cfg)
     Cfg.env.num_envs = 1000
 
-    RunnerArgs.resume = True
+    RunnerArgs.resume = False   # use pretrain or not
     RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
     RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
 
@@ -273,7 +273,7 @@ def train_go1(headless=True):
     wandb.init(
       # set the wandb project where this run will be logged
       project="dribbling",
-
+      entity="xander2077",
       # track hyperparameters and run metadata
       config={
       "AC_Args": vars(AC_Args),
