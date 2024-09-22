@@ -1539,7 +1539,7 @@ class LeggedRobot(BaseTask):
         self.complete_video_frames = []
 
     def render(self, mode="rgb_array", target_loc=None, cam_distance=None):
-        cam_distance = [0, -1.0, 0.0]
+        cam_distance = [0, -1.0, 0.0]   # TODO: 修改了相机视角
         self.rendering_camera.set_position(target_loc, cam_distance)
         return self.rendering_camera.get_observation()
 

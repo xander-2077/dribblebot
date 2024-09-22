@@ -1,4 +1,4 @@
-def train_go2(headless=True):
+def train_go2(headless=True, use_wandb=False, exp_name=""):
 
     import isaacgym
     assert isaacgym
@@ -15,7 +15,7 @@ def train_go2(headless=True):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go2(Cfg)
-    Cfg.env.num_envs = 1000
+    Cfg.env.num_envs = 2000  # default: 1000
 
     RunnerArgs.resume = False   # use pretrain or not
     RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
@@ -98,7 +98,7 @@ def train_go2(headless=True):
 
     Cfg.env.num_observation_history = 15
     Cfg.reward_scales.feet_contact_forces = 0.0
-    Cfg.env.num_envs = 1000
+    # Cfg.env.num_envs = 1000
 
     Cfg.commands.exclusive_phase_offset = False
     Cfg.commands.pacing_offset = False
@@ -269,22 +269,23 @@ def train_go2(headless=True):
 
     RunnerArgs.save_video_interval = 500
 
-    import wandb
-    wandb.init(
-      # set the wandb project where this run will be logged
-      project="dribbling",
-      entity="xander2077",
-      # track hyperparameters and run metadata
-      config={
-      "AC_Args": vars(AC_Args),
-      "PPO_Args": vars(PPO_Args),
-      "RunnerArgs": vars(RunnerArgs),
-      "Cfg": vars(Cfg),
-      }
-    )
+    if use_wandb:
+      import wandb
+      wandb.init(
+        # set the wandb project where this run will be logged
+        project="dribbling",
+        entity="xander2077",
+        name=exp_name,
+        # track hyperparameters and run metadata
+        config={
+        "AC_Args": vars(AC_Args),
+        "PPO_Args": vars(PPO_Args),
+        "RunnerArgs": vars(RunnerArgs),
+        "Cfg": vars(Cfg),
+        }
+      )
 
     device = 'cuda:0'
-    # device = 'cpu'
     env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
 
     env = HistoryWrapper(env)
@@ -299,5 +300,5 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(headless=False)
+    train_go2(headless=False, use_wandb=False, exp_name="go2_test")
 

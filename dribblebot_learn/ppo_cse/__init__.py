@@ -2,6 +2,7 @@ import time
 from collections import deque
 import copy
 import os
+import tqdm
 
 import torch
 # from ml_logger import logger
@@ -119,7 +120,7 @@ class Runner:
         cur_episode_length = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
 
         tot_iter = self.current_learning_iteration + num_learning_iterations
-        for it in range(self.current_learning_iteration, tot_iter):
+        for it in tqdm(range(self.current_learning_iteration, tot_iter), desc="Learning"):
             start = time.time()
             # Rollout
             with torch.inference_mode():
