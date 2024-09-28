@@ -2,7 +2,7 @@ import time
 from collections import deque
 import copy
 import os
-import tqdm
+from tqdm import tqdm
 
 import torch
 # from ml_logger import logger
@@ -79,9 +79,11 @@ class Runner:
                                       ).to(self.device)
         # Load weights from checkpoint 
         if RunnerArgs.resume:
-            body = wandb.restore(RunnerArgs.resume_checkpoint, run_path=RunnerArgs.resume_path)            
-            actor_critic.load_state_dict(torch.load(body.name))
-            print(f"Successfully loaded weights from checkpoint ({RunnerArgs.resume_checkpoint}) and run path ({RunnerArgs.resume_path})")
+            # body = wandb.restore(RunnerArgs.resume_checkpoint, run_path=RunnerArgs.resume_path)   
+            # breakpoint()         
+            # actor_critic.load_state_dict(torch.load(body.name))
+            # print(f"Successfully loaded weights from checkpoint ({RunnerArgs.resume_checkpoint}) and run path ({RunnerArgs.resume_path})")
+            actor_critic.load_state_dict(torch.load(RunnerArgs.resume_checkpoint))
 
         self.alg = PPO(actor_critic, device=self.device)
         self.num_steps_per_env = RunnerArgs.num_steps_per_env
@@ -120,7 +122,8 @@ class Runner:
         cur_episode_length = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
 
         tot_iter = self.current_learning_iteration + num_learning_iterations
-        for it in tqdm(range(self.current_learning_iteration, tot_iter), desc="Learning"):
+        for it in tqdm(range(self.current_learning_iteration, tot_iter)):
+        # for it in range(self.current_learning_iteration, tot_iter):
             start = time.time()
             # Rollout
             with torch.inference_mode():

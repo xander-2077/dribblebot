@@ -15,11 +15,12 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go2(Cfg)
-    Cfg.env.num_envs = 2000  # default: 1000
+    Cfg.env.num_envs = 16  # default: 4096
 
-    RunnerArgs.resume = False   # use pretrain or not
-    RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
-    RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
+    RunnerArgs.resume = True   # use pretrain or not
+    # RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
+    # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'    
+    RunnerArgs.resume_checkpoint = '/home/xander/Codes/IsaacGym/dribblebot/tmp/legged_data/ac_weights_latest.pt'   # TODO: change this path
 
 
     Cfg.robot.name = "go2"
@@ -83,7 +84,7 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
     Cfg.domain_rand.gravity_impulse_duration = 0.99
     Cfg.domain_rand.randomize_com_displacement = False
     Cfg.domain_rand.com_displacement_range = [-0.15, 0.15]
-    Cfg.domain_rand.randomize_ground_friction = True
+    Cfg.domain_rand.randomize_ground_friction = True   # TODO: randomize ground friction
     Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
     Cfg.domain_rand.randomize_motor_strength = True
     Cfg.domain_rand.motor_strength_range = [0.99, 1.01]
@@ -98,7 +99,6 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
 
     Cfg.env.num_observation_history = 15
     Cfg.reward_scales.feet_contact_forces = 0.0
-    # Cfg.env.num_envs = 1000
 
     Cfg.commands.exclusive_phase_offset = False
     Cfg.commands.pacing_offset = False
@@ -269,21 +269,21 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
 
     RunnerArgs.save_video_interval = 500
 
-    if use_wandb:
-      import wandb
-      wandb.init(
-        # set the wandb project where this run will be logged
-        project="dribbling",
-        entity="xander2077",
-        name=exp_name,
-        # track hyperparameters and run metadata
-        config={
-        "AC_Args": vars(AC_Args),
-        "PPO_Args": vars(PPO_Args),
-        "RunnerArgs": vars(RunnerArgs),
-        "Cfg": vars(Cfg),
-        }
-      )
+    import wandb
+    wandb.init(
+      # set the wandb project where this run will be logged
+      mode="disabled" if use_wandb is False else "online",
+      project="dribbling",
+      entity="xander2077",
+      name=exp_name,
+      # track hyperparameters and run metadata
+      config={
+      "AC_Args": vars(AC_Args),
+      "PPO_Args": vars(PPO_Args),
+      "RunnerArgs": vars(RunnerArgs),
+      "Cfg": vars(Cfg),
+      }
+    )
 
     device = 'cuda:0'
     env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
@@ -300,5 +300,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(headless=False, use_wandb=False, exp_name="go2_test")
-
+    train_go2(headless=False, use_wandb=True, exp_name="resume_dischange")
