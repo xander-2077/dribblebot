@@ -84,8 +84,8 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
     Cfg.domain_rand.gravity_impulse_duration = 0.99
     Cfg.domain_rand.randomize_com_displacement = False
     Cfg.domain_rand.com_displacement_range = [-0.15, 0.15]
-    Cfg.domain_rand.randomize_ground_friction = True   # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
+    # Cfg.domain_rand.randomize_ground_friction = True   
+    # Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
     Cfg.domain_rand.randomize_motor_strength = True
     Cfg.domain_rand.motor_strength_range = [0.99, 1.01]
     Cfg.domain_rand.randomize_motor_offset = True
@@ -116,8 +116,8 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
     # domain randomization ranges
     Cfg.domain_rand.rand_interval_s = 6
     Cfg.domain_rand.friction_range = [0.0, 1.5]
-    Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]
+    Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
+    Cfg.domain_rand.ground_friction_range = [0.4, 1.5]   # default: [0.7, 4.0] 
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
