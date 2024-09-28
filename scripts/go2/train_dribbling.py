@@ -15,12 +15,12 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go2(Cfg)
-    Cfg.env.num_envs = 16  # default: 4096
+    Cfg.env.num_envs = 2048  # default: 4096
 
     RunnerArgs.resume = True   # use pretrain or not
     # RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
     # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'    
-    RunnerArgs.resume_checkpoint = '/home/xander/Codes/IsaacGym/dribblebot/tmp/legged_data/ac_weights_latest.pt'   # TODO: change this path
+    RunnerArgs.resume_checkpoint = '/home/zdj/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'   # TODO: change this path
 
 
     Cfg.robot.name = "go2"
@@ -251,7 +251,7 @@ def train_go2(headless=True, use_wandb=False, exp_name=""):
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.7, 4.0]
+    Cfg.normalization.ground_friction_range = [0.4, 1.5]   # default: [0.7, 4.0]
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
 
