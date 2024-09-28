@@ -136,7 +136,7 @@ def play_go2(headless=True):
     env, policy = load_env(label, headless=headless)
     # env: <HistoryWrapper<VelocityTrackingEasyEnv instance>>
 
-    num_eval_steps = 500
+    num_eval_steps = 5000  # 本地测试时，可以设置为5000
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
@@ -155,8 +155,8 @@ def play_go2(headless=True):
     target_x_vels = np.ones(num_eval_steps) * x_vel_cmd
     joint_positions = np.zeros((num_eval_steps, 12))
 
-    import imageio
-    mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
+    # import imageio
+    # mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
 
     obs = env.reset()
     ep_rew = 0
@@ -180,12 +180,12 @@ def play_go2(headless=True):
         ep_rew += rew
 
         img = env.render(mode='rgb_array')
-        mp4_writer.append_data(img)
+        # mp4_writer.append_data(img)
 
         out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
         out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)
 
-    mp4_writer.close()
+    # mp4_writer.close()
 
     # plot target and measured forward velocity
     from matplotlib import pyplot as plt
