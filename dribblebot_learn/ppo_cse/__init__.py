@@ -205,6 +205,7 @@ class Runner:
                     'min_command_x_vel': tensor(-1.4996, device='cuda:0'),
                     'min_command_y_vel': tensor(-1.4967, device='cuda:0'),
                     'min_command_yaw_vel': tensor(0., device='cuda:0'),
+                    ------
                     'rew_action_rate': tensor(0., device='cuda:0'),
                     'rew_action_smoothness_1': tensor(0., device='cuda:0'),
                     'rew_action_smoothness_2': tensor(0., device='cuda:0'),
@@ -226,7 +227,13 @@ class Runner:
                     'rew_tracking_contacts_shaped_vel': tensor(0., device='cuda:0')}
                     """
                     if "train/episode" in infos:
-                        wandb.log({f'train_episode/{key}': value for key, value in infos["train/episode"].items()}, step=it)
+                        for key, value in infos["train/episode"].items():
+                            if "rew" in key:
+                                wandb.log({f'reward/{key}': value}, step=it)
+                            else:
+                                wandb.log({f'command/{key}': value}, step=it)
+                        
+                        # wandb.log({f'train_episode/{key}': value for key, value in infos["train/episode"].items()}, step=it)
 
                     if "curriculum" in infos:
 
@@ -281,9 +288,6 @@ class Runner:
                 },
                 step=it,
             )
-
-            # logger.store_metrics(**mean_adaptation_losses_dict)
-            wandb.log(mean_adaptation_losses_dict, step=it)   # 似乎是没用的
 
             if RunnerArgs.save_video_interval:
                 self.log_video(it)

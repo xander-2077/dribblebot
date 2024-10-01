@@ -19,7 +19,7 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
 
     RunnerArgs.resume = resume   # use pretrain or not
     # RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
-    # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'    
+    # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'
     RunnerArgs.resume_checkpoint = '/home/zdj/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'   # TODO: change this path
 
 
@@ -300,4 +300,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(headless=True, use_wandb=True, resume=True, exp_name="test")
+    train_go2(headless=True, use_wandb=True, resume=True, exp_name="resume_friction")
