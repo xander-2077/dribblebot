@@ -1,8 +1,9 @@
-def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
+def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', number_envs=1024):
 
     import isaacgym
     assert isaacgym
     import torch
+    import wandb
 
     from dribblebot.envs.base.legged_robot_config import Cfg
     from dribblebot.envs.go2.go2_config import config_go2
@@ -15,13 +16,12 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go2(Cfg)
-    Cfg.env.num_envs = 2048  # default: 4096
+    Cfg.env.num_envs = number_envs  # default: 4096
 
-    RunnerArgs.resume = resume   # use pretrain or not
+    RunnerArgs.resume = resume_flag   # use pretrain or not
     # RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
     # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'
-    RunnerArgs.resume_checkpoint = '/home/zdj/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'   # TODO: change this path
-
+    RunnerArgs.resume_checkpoint = '/home/zdj/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'                        # TODO: change this path
 
     Cfg.robot.name = "go2"
     Cfg.sensors.sensor_names = [
@@ -72,8 +72,7 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
     Cfg.control.control_type = "actuator_net"
 
     Cfg.domain_rand.randomize_rigids_after_start = False
-    Cfg.domain_rand.randomize_friction_indep = False
-    Cfg.domain_rand.randomize_friction = False # True
+    # Cfg.domain_rand.randomize_friction_indep = False
     Cfg.domain_rand.randomize_restitution = False # True
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.randomize_base_mass = True
@@ -115,9 +114,10 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
 
     # domain randomization ranges
     Cfg.domain_rand.rand_interval_s = 6
+    Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.4, 1.5]   # default: [0.7, 4.0] 
+    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]   # default: [0.7, 4.0] change2: [0.4, 1.5]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
@@ -128,7 +128,6 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
     # privileged obs in use
     Cfg.env.num_privileged_obs = 6
     Cfg.env.priv_observe_ball_drag = True
-
 
     # sensory observation
     Cfg.commands.num_commands = 15
@@ -215,7 +214,7 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
     Cfg.rewards.constrict = False
 
     # reward function
-    Cfg.reward_scales.orientation = -5.0
+    Cfg.reward_scales.orientation = -20.0    # TODO   default: -5.0  change2: -20.0
     Cfg.reward_scales.torques = -0.0001
     Cfg.reward_scales.dof_vel = -0.0001
     Cfg.reward_scales.dof_acc = -2.5e-7
@@ -251,7 +250,7 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.4, 1.5]   # default: [0.7, 4.0]
+    Cfg.normalization.ground_friction_range = [0.7, 4.0]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5]     
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
 
@@ -269,7 +268,6 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
 
     RunnerArgs.save_video_interval = 500
 
-    import wandb
     wandb.init(
       # set the wandb project where this run will be logged
       mode="disabled" if use_wandb is False else "online",
@@ -285,9 +283,7 @@ def train_go2(headless=True, use_wandb=False, resume=False, exp_name=""):
       }
     )
 
-    device = 'cuda:0'
     env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
-
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
@@ -300,4 +296,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(headless=True, use_wandb=True, resume=True, exp_name="resume_friction")
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2FromScratchOrientation", device='cuda:1', number_envs=1024)
