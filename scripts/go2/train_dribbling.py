@@ -283,7 +283,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
       }
     )
 
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
@@ -295,5 +295,4 @@ if __name__ == '__main__':
 
     stem = Path(__file__).stem
     
-    # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2FromScratchOrientation", device='cuda:1', number_envs=1024)
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2FromScratchOrientation", device='cuda:1', number_envs=2000)
