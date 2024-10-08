@@ -15,7 +15,7 @@ def train_go1(headless=True):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go1(Cfg)
-    Cfg.env.num_envs = 1000
+    Cfg.env.num_envs = 2000
 
     RunnerArgs.resume = False   # use pretrain or not
     RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
@@ -274,6 +274,7 @@ def train_go1(headless=True):
       # set the wandb project where this run will be logged
       project="dribbling",
       entity="xander2077",
+      name="Go1FromScratch",
       # track hyperparameters and run metadata
       config={
       "AC_Args": vars(AC_Args),
@@ -283,9 +284,9 @@ def train_go1(headless=True):
       }
     )
 
-    device = 'cuda:0'
+    device = 'cuda:1'
     # device = 'cpu'
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
 
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
