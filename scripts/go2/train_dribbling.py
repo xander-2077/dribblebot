@@ -253,7 +253,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.normalization.ground_friction_range = [0.4, 1.5]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5]     
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
-
+ 
     # reward function (not in use)
     Cfg.reward_scales.feet_slip = -0.0
     Cfg.reward_scales.jump = 0.0
