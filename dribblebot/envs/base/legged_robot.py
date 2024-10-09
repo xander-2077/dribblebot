@@ -1696,4 +1696,6 @@ class LeggedRobot(BaseTask):
         """
         cam_pos = gymapi.Vec3(position[0], position[1], position[2])
         cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
-        self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target)
+        self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target) 
+        # self.gym.viewer_camera_look_at(self.viewer, None, gymapi.Vec3(2.0, 2.0, 2.0), gymapi.Vec3(0.0, 0.0, 0.5))     # TODO: set look at where
+        

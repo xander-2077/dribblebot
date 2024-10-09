@@ -42,7 +42,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.penalize_contacts_on = ["thigh", "calf"]
     _.terminate_after_contacts_on = ["base"]
     _.self_collisions = 0  # 1 to disable, 0 to enable...bitwise filter
-    _.flip_visual_attachments = True
+    _.flip_visual_attachments = True    # TODO: flip visual attachments
     _.fix_base_link = False
 
     _ = Cnfg.rewards

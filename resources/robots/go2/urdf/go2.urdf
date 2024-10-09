@@ -27,7 +27,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/base.dae" />
+          filename="../meshes/base.dae" />
       </geometry>
       <material
         name="">
@@ -140,7 +140,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/hip.dae" />
+          filename="../meshes/hip.dae" />
       </geometry>
       <material
         name="">
@@ -195,7 +195,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/thigh.dae" />
+          filename="../meshes/thigh.dae" />
       </geometry>
       <material
         name="">
@@ -206,7 +206,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 1.5707963267948966 0" xyz="0 0 -0.1065" />
       <geometry>
-        <box size="0.11 0.0245 0.034" />
+        <box size="0.213 0.0245 0.034" />
       </geometry>
     </collision>
   </link>
@@ -250,7 +250,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/calf.dae" />
+          filename="../meshes/calf.dae" />
       </geometry>
       <material
         name="">
@@ -280,8 +280,8 @@ Stephen Brawner (brawner@gmail.com)
     <limit
       lower="-2.7227"
       upper="-0.83776"
-      effort="35.55"
-      velocity="20.07" />
+      effort="45.43"
+      velocity="15.70" />
   </joint>
   <link
     name="FL_calflower">
@@ -349,7 +349,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/foot.dae" />
+          filename="../meshes/foot.dae" />
       </geometry>
       <material
         name="">
@@ -399,7 +399,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="3.1415 0 0" />
       <geometry>
         <mesh
-          filename="../dae/hip.dae" />
+          filename="../meshes/hip.dae" />
       </geometry>
       <material
         name="">
@@ -454,7 +454,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/thigh_mirror.dae" />
+          filename="../meshes/thigh_mirror.dae" />
       </geometry>
       <material
         name="">
@@ -465,7 +465,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 1.5707963267948966 0" xyz="0 0 -0.1065" />
       <geometry>
-        <box size="0.11 0.0245 0.034" />
+        <box size="0.213 0.0245 0.034" />
       </geometry>
     </collision>
   </link>
@@ -509,7 +509,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/calf_mirror.dae" />
+          filename="../meshes/calf_mirror.dae" />
       </geometry>
       <material
         name="">
@@ -539,8 +539,8 @@ Stephen Brawner (brawner@gmail.com)
     <limit
       lower="-2.7227"
       upper="-0.83776"
-      effort="35.55"
-      velocity="20.07" />
+      effort="45.43"
+      velocity="15.70" />
   </joint>
   <link
     name="FR_calflower">
@@ -608,7 +608,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/foot.dae" />
+          filename="../meshes/foot.dae" />
       </geometry>
       <material
         name="">
@@ -658,7 +658,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 3.1415 0" />
       <geometry>
         <mesh
-          filename="../dae/hip.dae" />
+          filename="../meshes/hip.dae" />
       </geometry>
       <material
         name="">
@@ -713,7 +713,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/thigh.dae" />
+          filename="../meshes/thigh.dae" />
       </geometry>
       <material
         name="">
@@ -724,7 +724,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 1.5707963267948966 0" xyz="0 0 -0.1065" />
       <geometry>
-        <box size="0.11 0.0245 0.034" />
+        <box size="0.213 0.0245 0.034" />
       </geometry>
     </collision>
   </link>
@@ -768,7 +768,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/calf.dae" />
+          filename="../meshes/calf.dae" />
       </geometry>
       <material
         name="">
@@ -798,8 +798,8 @@ Stephen Brawner (brawner@gmail.com)
     <limit
       lower="-2.7227"
       upper="-0.83776"
-      effort="35.55"
-      velocity="20.07" />
+      effort="45.43"
+      velocity="15.70" />
   </joint>
   <link
     name="RL_calflower">
@@ -867,7 +867,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/foot.dae" />
+          filename="../meshes/foot.dae" />
       </geometry>
       <material
         name="">
@@ -917,7 +917,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="3.1415 3.1415 0" />
       <geometry>
         <mesh
-          filename="../dae/hip.dae" />
+          filename="../meshes/hip.dae" />
       </geometry>
       <material
         name="">
@@ -972,7 +972,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/thigh_mirror.dae" />
+          filename="../meshes/thigh_mirror.dae" />
       </geometry>
       <material
         name="">
@@ -983,7 +983,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 1.5707963267948966 0" xyz="0 0 -0.1065" />
       <geometry>
-        <box size="0.11 0.0245 0.034" />
+        <box size="0.213 0.0245 0.034" />
       </geometry>
     </collision>
   </link>
@@ -1027,7 +1027,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/calf_mirror.dae" />
+          filename="../meshes/calf_mirror.dae" />
       </geometry>
       <material
         name="">
@@ -1057,8 +1057,8 @@ Stephen Brawner (brawner@gmail.com)
     <limit
       lower="-2.7227"
       upper="-0.83776"
-      effort="35.55"
-      velocity="20.07" />
+      effort="45.43"
+      velocity="15.70" />
   </joint>
   <link
     name="RR_calflower">
@@ -1126,7 +1126,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="../dae/foot.dae" />
+          filename="../meshes/foot.dae" />
       </geometry>
       <material
         name="">

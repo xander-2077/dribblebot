@@ -117,7 +117,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.4, 1.5]   # default: [0.7, 4.0] change2: [0.4, 1.5]
+    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]   # default: [0.7, 4.0] change2: [0.4, 1.5]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
@@ -229,7 +229,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
     Cfg.reward_scales.dribbling_robot_ball_pos = 4.0
     Cfg.reward_scales.dribbling_ball_vel = 4.0
-    Cfg.reward_scales.dribbling_robot_ball_yaw = 4.0
+    Cfg.reward_scales.dribbling_robot_ball_yaw = 20.0     # TODO  default: 4.0  change2: 20.0
     Cfg.reward_scales.dribbling_ball_vel_norm = 4.0
     Cfg.reward_scales.dribbling_ball_vel_angle = 4.0
 
@@ -250,7 +250,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.4, 1.5]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5]     
+    Cfg.normalization.ground_friction_range = [0.7, 4.0]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5]     
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
  
@@ -283,7 +283,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
       }
     )
 
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
@@ -296,4 +296,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=True, exp_name="Go2FromScratchGroundFriction", device='cuda:1', number_envs=4000)
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Test", device='cuda:0', number_envs=256)
