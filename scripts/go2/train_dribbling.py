@@ -214,7 +214,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.rewards.constrict = False
 
     # reward function
-    Cfg.reward_scales.orientation = -5.0    # TODO   default: -5.0  change2: -20.0
+    Cfg.reward_scales.orientation = -5.0
     Cfg.reward_scales.torques = -0.0001
     Cfg.reward_scales.dof_vel = -0.0001
     Cfg.reward_scales.dof_acc = -2.5e-7
@@ -229,7 +229,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
     Cfg.reward_scales.dribbling_robot_ball_pos = 4.0
     Cfg.reward_scales.dribbling_ball_vel = 4.0
-    Cfg.reward_scales.dribbling_robot_ball_yaw = 20.0     # TODO  default: 4.0  change2: 20.0
+    Cfg.reward_scales.dribbling_robot_ball_yaw = 4.0     # TODO  default: 4.0  change2: 20.0
     Cfg.reward_scales.dribbling_ball_vel_norm = 4.0
     Cfg.reward_scales.dribbling_ball_vel_angle = 4.0
 
@@ -283,7 +283,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
       }
     )
 
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
@@ -296,4 +296,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=False, exp_name="Test", device='cuda:0', number_envs=256)
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2FromScratchUnchanged", device='cuda:0', number_envs=4000)

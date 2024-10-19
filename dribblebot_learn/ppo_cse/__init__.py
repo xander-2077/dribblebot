@@ -82,7 +82,6 @@ class Runner:
         # Load weights from checkpoint
         if RunnerArgs.resume:
             # body = wandb.restore(RunnerArgs.resume_checkpoint, run_path=RunnerArgs.resume_path)
-            # breakpoint()
             # actor_critic.load_state_dict(torch.load(body.name))
             # print(f"Successfully loaded weights from checkpoint ({RunnerArgs.resume_checkpoint}) and run path ({RunnerArgs.resume_path})")
             actor_critic.load_state_dict(torch.load(RunnerArgs.resume_checkpoint))
