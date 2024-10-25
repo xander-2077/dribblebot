@@ -46,6 +46,16 @@ class SoccerRewards(Rewards):
             reward += - (1 - desired_contact[:, i]) * (
                         1 - torch.exp(-1 * foot_forces[:, i] ** 2 / self.env.cfg.rewards.gait_force_sigma))
         return reward / 4
+    
+    def _reward_tracking_contacts_shaped_force_for_kicking(self):# designed for kicking, more powerful kicking is encouraged
+        foot_forces = torch.norm(self.env.contact_forces[:, self.env.feet_indices, :], dim=-1)
+        desired_contact = self.env.desired_contact_states
+
+        reward = 0
+        for i in range(4):
+            reward += -(1 - desired_contact[:, i]) * (
+                        torch.exp(-1 * foot_forces[:, i] ** 2 / self.env.cfg.rewards.gait_force_sigma))
+        return reward / 4        
 
     def _reward_tracking_contacts_shaped_vel(self):   # √
         foot_velocities = torch.norm(self.env.foot_velocities, dim=2).view(self.env.num_envs, -1)
@@ -96,6 +106,7 @@ class SoccerRewards(Rewards):
         velocity_concatenation = torch.cat((torch.zeros(self.env.num_envs,1, device=self.env.device), ball_robot_velocity_projection.unsqueeze(dim=-1)), dim=-1)
         rew_dribbling_robot_ball_vel=torch.exp(-delta_dribbling_robot_ball_vel* torch.pow(torch.max(velocity_concatenation,dim=-1).values, 2) )
         return rew_dribbling_robot_ball_vel
+    
 
     # encourage robot near ball
     # r_cp
@@ -115,7 +126,22 @@ class SoccerRewards(Rewards):
         lin_vel_error = torch.sum(torch.square(self.env.commands[:, :2] - self.env.object_lin_vel[:, :2]), dim=1)
         # rew_dribbling_ball_vel = torch.exp(-lin_vel_error / (self.env.cfg.rewards.tracking_sigma*2))
         return torch.exp(-lin_vel_error / (self.env.cfg.rewards.tracking_sigma*2))
-        
+
+    def _reward_kicking_ball_vel(self):   # √ to encourage the velocity of the ball to be in the direction of the command
+        # 计算命令速度的单位向量
+        command_velocity = self.env.commands[:, :2]
+        command_velocity_norm = torch.norm(command_velocity, dim=1, keepdim=True)
+        command_velocity_unit = command_velocity / (command_velocity_norm + 1e-8)  # 避免除以零
+
+        # 计算球在命令速度方向上的速度分量
+        ball_velocity = self.env.object_lin_vel[:, :2]
+        ball_velocity_in_command_direction = torch.sum(ball_velocity * command_velocity_unit, dim=1)
+
+        # 设计奖励函数，鼓励球在命令速度方向上的速度越大越好，并将奖励值限制在0到1之间
+        reward = torch.clamp(1 - torch.exp(-ball_velocity_in_command_direction), 0, 1)
+
+        return reward 
+
     def _reward_dribbling_robot_ball_yaw(self):   # TODO: something wrong, norm会出现为0的情况
         robot_ball_vec = self.env.object_pos_world_frame[:,0:2] - self.env.base_pos[:,0:2]
         d_robot_ball=robot_ball_vec / torch.norm(robot_ball_vec, dim=-1).unsqueeze(dim=-1)

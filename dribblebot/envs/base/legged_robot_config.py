@@ -319,6 +319,7 @@ class Cfg(PrefixProto, cli=False):
         front_target = [[0.17, -0.09, 0]]
         estimation_bonus_dims = []
         estimation_bonus_weights = []
+
         
         constrict = False
         constrict_indices = []
@@ -346,6 +347,7 @@ class Cfg(PrefixProto, cli=False):
         tracking_contacts = 0.
         tracking_contacts_shaped = 0.
         tracking_contacts_shaped_force = 0.
+        tracking_contacts_shaped_force_for_kicking = 0.
         tracking_contacts_shaped_vel = 0.
         jump = 0.0
         energy = 0.0
@@ -366,6 +368,7 @@ class Cfg(PrefixProto, cli=False):
         dribbling_robot_ball_vel = 0.0
         dribbling_robot_ball_pos = 0.0
         dribbling_ball_vel = 0.0
+        kicking_ball_vel = 0.0
         dribbling_robot_ball_yaw = 0.0
         dribbling_ball_vel_norm = 0.0
         dribbling_ball_vel_angle = 0.0
