@@ -13,9 +13,10 @@ from dribblebot.envs.go2.velocity_tracking import VelocityTrackingEasyEnv
 from tqdm import tqdm
 
 def load_policy(logdir):
-    body = torch.jit.load(logdir + '/body.jit', map_location="cpu")
-    import os
-    adaptation_module = torch.jit.load(logdir + '/adaptation_module.jit', map_location='cpu')
+    # body = torch.jit.load(logdir + '/body.jit', map_location="cpu")
+    # adaptation_module = torch.jit.load(logdir + '/adaptation_module.jit', map_location='cpu')
+    body = torch.jit.load('/home/xander/Downloads/ckpt/body_56000.jit', map_location="cpu")
+    adaptation_module = torch.jit.load('/home/xander/Downloads/ckpt/adaptation_module_56000.jit', map_location='cpu')
 
     def policy(obs, info={}):
         """
@@ -84,16 +85,16 @@ def load_env(label, headless=False):
 
     Cfg.robot.name = "go2"
     Cfg.sensors.sensor_names = [
-                        "ObjectSensor",
-                        "OrientationSensor",
-                        "RCSensor",
-                        "JointPositionSensor",
-                        "JointVelocitySensor",
-                        "ActionSensor",
-                        "ActionSensor",
-                        "ClockSensor",
-                        "YawSensor",
-                        "TimingSensor",
+                        "ObjectSensor",         # 3 [0:3] z==0
+                        "OrientationSensor",    # 3 [3:6]
+                        "RCSensor",             # 15 [6:21]
+                        "JointPositionSensor",  # 12 [21:33]
+                        "JointVelocitySensor",  # 12 [33:45]
+                        "ActionSensor",         # 12 [45:57]
+                        "ActionSensor",         # 12 [57:69]
+                        "ClockSensor",          # 4 [69:73]
+                        "YawSensor",            # 1 [73:74] 部署时需要积分
+                        "TimingSensor",         # 1 [74:75]
                         ]
     Cfg.sensors.sensor_args = {
                         "ObjectSensor": {},
@@ -163,17 +164,17 @@ def play_go2(headless=True):
     for i in tqdm(range(num_eval_steps)):
         with torch.no_grad():
             actions = policy(obs)
-        env.commands[:, 0] = x_vel_cmd
-        env.commands[:, 1] = y_vel_cmd
-        env.commands[:, 2] = yaw_vel_cmd
-        env.commands[:, 3] = body_height_cmd
-        env.commands[:, 4] = step_frequency_cmd
-        env.commands[:, 5:8] = gait
+        env.commands[:, 0] = x_vel_cmd              # 0.0 * 2
+        env.commands[:, 1] = y_vel_cmd              # -1.0 * 2
+        env.commands[:, 2] = yaw_vel_cmd            # 0.0 * 0.25
+        env.commands[:, 3] = body_height_cmd        # 0.0 * 2
+        env.commands[:, 4] = step_frequency_cmd     # 3.0
+        env.commands[:, 5:8] = gait                 # [0.5, 0, 0]
         env.commands[:, 8] = 0.5
-        env.commands[:, 9] = footswing_height_cmd
-        env.commands[:, 10] = pitch_cmd
-        env.commands[:, 11] = roll_cmd
-        env.commands[:, 12] = stance_width_cmd
+        env.commands[:, 9] = footswing_height_cmd   # 0.09 * 0.15
+        env.commands[:, 10] = pitch_cmd             # 0.0 * 0.3
+        env.commands[:, 11] = roll_cmd              # 0.0 * 0.3
+        env.commands[:, 12] = stance_width_cmd      # 0.0
         obs, rew, done, info = env.step(actions)
         measured_x_vels[i] = env.base_lin_vel[0, 0]
         joint_positions[i] = env.dof_pos[0, :].cpu()

@@ -358,6 +358,7 @@ class LeggedRobot(BaseTask):
         for sensor in self.sensors:
             self.pre_obs_buf += [sensor.get_observation()]
         self.pre_obs_buf = torch.reshape(torch.cat(self.pre_obs_buf, dim=-1), (self.num_envs, -1))
+        # 75 dims
         self.obs_buf[:] = self.pre_obs_buf
 
         self.privileged_obs_buf = []
@@ -982,7 +983,7 @@ class LeggedRobot(BaseTask):
 
         if self.cfg.rewards.constrict and self.common_step_counter >= self.cfg.rewards.constrict_after:
             for idx, range in zip(constrict_indices, constrict_ranges):
-                self.commands[env_ids, idx] = range[0]
+                self.commands[env_ids, idx] = range[0]  # TODO: 13, 14
 
     def _teleport_robots(self, env_ids, cfg):
         """ Teleports any robots that are too close to the edge to the other side
