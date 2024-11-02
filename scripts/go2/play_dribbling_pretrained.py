@@ -159,6 +159,26 @@ def play_go2(headless=True):
     # import imageio
     # mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
 
+    def save_observation_to_file(obs, filename="observation_output.txt", mode="a"):
+        obs = obs.squeeze().cpu().numpy()
+        sensor_info = {
+            "ObjectSensor": obs[0:3],
+            "OrientationSensor": obs[3:6],
+            "RCSensor": obs[6:21],
+            "JointPositionSensor": obs[21:33],
+            "JointVelocitySensor": obs[33:45],
+            "ActionSensor": obs[45:57],
+            "ActionSensor_last": obs[57:69],
+            "ClockSensor": obs[69:73],
+            "YawSensor": obs[73:74],
+            "TimingSensor": obs[74:75]
+        }
+
+        with open(filename, mode) as file:
+            for sensor_name, sensor_values in sensor_info.items():
+                file.write(f"{sensor_name}: {sensor_values}\n")
+            file.write("-" * 40 + "\n")
+
     obs = env.reset()
     ep_rew = 0
     for i in tqdm(range(num_eval_steps)):
@@ -176,6 +196,10 @@ def play_go2(headless=True):
         env.commands[:, 11] = roll_cmd              # 0.0 * 0.3
         env.commands[:, 12] = stance_width_cmd      # 0.0
         obs, rew, done, info = env.step(actions)
+        if i == 0:
+            save_observation_to_file(obs["obs"], mode="w")
+        else:
+            save_observation_to_file(obs["obs"], mode="a")
         measured_x_vels[i] = env.base_lin_vel[0, 0]
         joint_positions[i] = env.dof_pos[0, :].cpu()
         ep_rew += rew
