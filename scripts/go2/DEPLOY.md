@@ -43,6 +43,10 @@ self.env.commands * self.env.commands_scale
 13: stance_length     scale: 1.0 ?????
 14: aux_reward     scale: 1.0
 
+commands 全零初始化
+关注 _resample_commands
+
+
 
 "JointPositionSensor",  # 12 [21:33]
 self.env.dof_pos[:, :self.env.num_actuated_dof] - self.env.default_dof_pos[:, :self.env.num_actuated_dof]
@@ -81,7 +85,7 @@ bounds = self.commands[:, 7]    (0.0)
 
 "YawSensor",            # 1 [73:74] 
 与规定的forward_vec的夹角
-部署时需要使用IMU积分 ???
+部署时需要使用IMU积分 ??? 看论文
 (-pi, pi)
 
 

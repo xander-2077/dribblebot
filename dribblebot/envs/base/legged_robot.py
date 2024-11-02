@@ -578,7 +578,6 @@ class LeggedRobot(BaseTask):
 
         self._resample_commands(env_ids)
         self._step_contact_targets()
-        
         if self.cfg.commands.heading_command:
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0]) - self.heading_offsets
