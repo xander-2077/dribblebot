@@ -43,7 +43,7 @@ def load_policy(logdir):
 def load_env(label, headless=False):
     dirs = glob.glob(f"../../runs/{label}/*")
     logdir = sorted(dirs)[-1]
-
+    
     import yaml
     with open(logdir + "/config.yaml", 'rb') as file: 
         cfg = yaml.safe_load(file)
@@ -121,6 +121,13 @@ def load_env(label, headless=False):
     Cfg.domain_rand.randomize_lag_timesteps = True
     Cfg.control.control_type = "actuator_net"
     Cfg.env.num_privileged_obs = 6
+    
+    import inspect, os
+    Cfg_source = inspect.getsource(Cfg)
+    config_path = os.path.join("play_config_cls", "config.py")
+    with open(config_path, "w") as f:
+        f.write("from params_proto import PrefixProto, ParamsProto\n\n")
+        f.write(Cfg_source)
         
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
@@ -137,7 +144,6 @@ def play_go2(headless=True):
     label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
     env, policy = load_env(label, headless=headless)
-    # env: <HistoryWrapper<VelocityTrackingEasyEnv instance>>
 
     num_eval_steps = 5000  # 本地测试时，可以设置为5000
     gaits = {"pronking": [0, 0, 0],
@@ -175,8 +181,9 @@ def play_go2(headless=True):
             "YawSensor": obs[73:74],
             "TimingSensor": obs[74:75]
         }
-
-        with open(filename, mode) as file:
+        import os
+        file_path = os.path.join("record", filename)
+        with open(file_path, mode) as file:
             for sensor_name, sensor_values in sensor_info.items():
                 file.write(f"{sensor_name}: {sensor_values}\n")
             file.write("-" * 40 + "\n")
