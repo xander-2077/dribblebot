@@ -121,7 +121,13 @@ def load_env(label, headless=False):
     Cfg.domain_rand.randomize_lag_timesteps = True
     Cfg.control.control_type = "actuator_net"
     Cfg.env.num_privileged_obs = 6
-
+    
+    import os
+    cfg_path = os.path.join(f'config_pretrained.yaml')
+    import yaml
+    with open(cfg_path, 'w') as f:
+        yaml.dump(Cfg, f)
+        
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
     env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=False, cfg=Cfg)
