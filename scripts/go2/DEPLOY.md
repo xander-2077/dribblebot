@@ -1,16 +1,14 @@
 # Deployment for Go2
 
-### Recovery controller?
 
-
-### obs:
+## obs
 clip obs:
 ```
 clip_obs = 100.
 self.obs_buf = torch.clip(self.obs_buf, -clip_obs, clip_obs)
 ```
 
-单帧 75 dims，一共是15帧打包(1125 dims),收集后过一个 wrapper:
+单帧 75 dims, 一共是15帧打包(1125 dims), 收集后过一个 wrapper:
 ```python
 self.obs_history = torch.cat((self.obs_history[:, self.env.num_obs:], obs), dim=-1)
 ```
@@ -112,7 +110,7 @@ frequencies = self.commands[:, 4] (3.0)
 
 
 
-### action:
+## action
 
 clip action:
 
@@ -218,3 +216,6 @@ def _compute_torques(self, actions):
 ```
 
 
+## Recovery controller
+
+TODO
