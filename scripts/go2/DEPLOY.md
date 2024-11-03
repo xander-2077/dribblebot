@@ -1,5 +1,8 @@
 # Deployment for Go2
 
+### Recovery controller?
+
+
 ### obs:
 clip obs:
 ```
@@ -28,7 +31,7 @@ radar: 0.28945 0 -0.046825
 self.env.commands * self.env.commands_scale
 0: x_vel  scale: 2.0
 1: y_vel  scale: 2.0
-2: yaw_vel  scale: 0.25
+2: yaw_vel  default: 0.0  scale: 0.25
 3: body_height  default: 0.0  scale: 2.0
 4: step_frequency  default: 3.0  scale: 1.0
 5,6,7: gaits = {"pronking": [0, 0, 0],
@@ -40,12 +43,17 @@ self.env.commands * self.env.commands_scale
 10: pitch  default: 0.0  scale: 0.3
 11: roll  default: 0.0   scale: 0.3
 12: stance_width  default: 0.0   scale: 1.0
-13: stance_length     scale: 1.0 ?????
+# 13和14的数值看起来都非常小
+13: stance_length     scale: 1.0
 14: aux_reward     scale: 1.0
 
 commands 全零初始化
-关注 _resample_commands
+_resample_commands():
 
+
+
+# setting the smaller commands to zero
+self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.2).unsqueeze(1)
 
 
 "JointPositionSensor",  # 12 [21:33]
@@ -85,7 +93,8 @@ bounds = self.commands[:, 7]    (0.0)
 
 "YawSensor",            # 1 [73:74] 
 与规定的forward_vec的夹角
-部署时需要使用IMU积分 ??? 看论文
+部署时需要使用IMU积分
+机器狗在第一个时间步的局部身体坐标系作为全局参考系
 (-pi, pi)
 
 
@@ -168,7 +177,7 @@ self.num_dof = 12
 self.num_actuated_dof = 12
 self.cfg.control.action_scale = 0.25
 self.cfg.control.hip_scale_reduction = 0.5
-self.cfg.domain_rand.randomize_lag_timesteps = True
+self.cfg.domain_rand.randomize_lag_timesteps = False
 self.cfg.domain_rand.lag_timesteps = 6
 self.lag_buffer = [torch.zeros_like(self.dof_pos) for i in range(self.cfg.domain_rand.lag_timesteps+1)]
 self.default_dof_pos = torch.tensor([ 0.1000,  0.8000, -1.5000, -0.1000,  0.8000, -1.5000,  0.1000,  1.0000, -1.5000, -0.1000,  1.0000, -1.5000], device=self.device)

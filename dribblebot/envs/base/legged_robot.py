@@ -366,9 +366,9 @@ class LeggedRobot(BaseTask):
         for sensor in self.privileged_sensors:
             self.privileged_obs_buf += [sensor.get_observation()]
         self.privileged_obs_buf = torch.reshape(torch.cat(self.privileged_obs_buf, dim=-1), (self.num_envs, -1))
-        # add noise if needed
-        if self.cfg.noise.add_noise:
-            self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+        # TODO: add noise if needed
+        # if self.cfg.noise.add_noise:
+        #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
 
 
     def create_sim(self):
@@ -658,8 +658,7 @@ class LeggedRobot(BaseTask):
 
             self.commands[env_ids_in_category, :] = torch.Tensor(new_commands[:, :self.cfg.commands.num_commands]).to(
                 self.device)
-
-        if self.cfg.commands.num_commands > 5:
+        if self.cfg.commands.num_commands > 5:  # 15, True
             if self.cfg.commands.gaitwise_curricula:
                 for i, (category, env_ids_in_category) in enumerate(zip(self.category_names, category_env_ids)):
                     if category == "pronk":  # pronking
@@ -723,10 +722,10 @@ class LeggedRobot(BaseTask):
             self.command_sums[key][env_ids] = 0.
             
         # respect command constriction
-        self._update_command_ranges(env_ids)
+        self._update_command_ranges(env_ids)  # TODO: 1
             
         # heading commands
-        if self.cfg.commands.heading_command:
+        if self.cfg.commands.heading_command:  # False
             self.heading_commands[env_ids] = torch_rand_float(self.cfg.commands.heading[0],
                                                          self.cfg.commands.heading[1], (len(env_ids), 1),
                                                          device=self.device).squeeze(1)
