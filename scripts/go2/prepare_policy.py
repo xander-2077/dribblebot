@@ -17,8 +17,9 @@ def load_and_save_policy(run_path, label):
 
     # load config
     from dribblebot.envs.base.legged_robot_config import Cfg
-    from dribblebot.envs.go1.go1_config import config_go1
-    config_go1(Cfg)
+    # from dribblebot.envs.go1.go1_config import config_go1
+    from dribblebot.envs.go2.go2_config import config_go2
+    config_go2(Cfg)
 
     all_cfg = run.config
     cfg = all_cfg["Cfg"]
@@ -34,24 +35,24 @@ def load_and_save_policy(run_path, label):
         os.makedirs(path)
     print("path: ", path)
 
-    adaptation_module_path = os.path.join(path, f'adaptation_module.jit')
-    adaptation_module_file = wandb.restore('tmp/legged_data/adaptation_module_latest.jit', run_path=run_path)
-    # adaptation_module_file = run.file('tmp/legged_data/adaptation_module_68000.jit').download(replace=True, root='./tmp')
-    adaptation_module = torch.jit.load(adaptation_module_file.name, map_location="cpu")
-    adaptation_module.save(adaptation_module_path)
+    # adaptation_module_path = os.path.join(path, f'adaptation_module.jit')
+    # adaptation_module_file = wandb.restore('tmp/legged_data/adaptation_module_53200.jit', run_path=run_path)
+    # # adaptation_module_file = run.file('tmp/legged_data/adaptation_module_68000.jit').download(replace=True, root='./tmp')
+    # adaptation_module = torch.jit.load(adaptation_module_file.name, map_location="cpu")
+    # adaptation_module.save(adaptation_module_path)
 
-    body_path = os.path.join(path, f'body.jit')
-    body_file = wandb.restore('tmp/legged_data/body_latest.jit', run_path=run_path)
-    # body_file = run.file('tmp/legged_data/body_68000.jit').download(replace=True, root='./tmp')
-    body = torch.jit.load(body_file.name, map_location="cpu")
-    body.save(body_path)
+    # body_path = os.path.join(path, f'body.jit')
+    # body_file = wandb.restore('tmp/legged_data/body_53200.jit', run_path=run_path)
+    # # body_file = run.file('tmp/legged_data/body_68000.jit').download(replace=True, root='./tmp')
+    # body = torch.jit.load(body_file.name, map_location="cpu")
+    # body.save(body_path)
 
-    ac_weights_path = os.path.join(path, f'ac_weights.pt')
-    ac_weights_file = wandb.restore('tmp/legged_data/ac_weights_68000.pt', run_path=run_path)
-    # ac_weights_file = run.file('tmp/legged_data/ac_weights_68000.pt').download(replace=True, root='./tmp')
-    ac_weights = torch.load(ac_weights_file.name, map_location="cpu")
-    # ac_weights.load_state_dict(torch.load(ac_weights_file.name))
-    torch.save(ac_weights, ac_weights_path)
+    # ac_weights_path = os.path.join(path, f'ac_weights.pt')
+    # ac_weights_file = wandb.restore('tmp/legged_data/ac_weights_53200.pt', run_path=run_path)
+    # # ac_weights_file = run.file('tmp/legged_data/ac_weights_68000.pt').download(replace=True, root='./tmp')
+    # ac_weights = torch.load(ac_weights_file.name, map_location="cpu")
+    # # ac_weights.load_state_dict(torch.load(ac_weights_file.name))
+    # torch.save(ac_weights, ac_weights_path)
 
     cfg_path = os.path.join(path, f'config.yaml')
     import yaml

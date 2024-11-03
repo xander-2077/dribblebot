@@ -45,7 +45,7 @@ def load_env(label, headless=False):
     logdir = sorted(dirs)[-1]
 
     import yaml
-    with open(logdir + "/config_go2.yaml", 'rb') as file: 
+    with open(logdir + "/config.yaml", 'rb') as file: 
         cfg = yaml.safe_load(file)
         cfg = cfg["Cfg"]
 
@@ -121,12 +121,6 @@ def load_env(label, headless=False):
     Cfg.domain_rand.randomize_lag_timesteps = True
     Cfg.control.control_type = "actuator_net"
     Cfg.env.num_privileged_obs = 6
-    
-    import os
-    cfg_path = os.path.join(f'config_pretrained.yaml')
-    import yaml
-    with open(cfg_path, 'w') as f:
-        yaml.dump(Cfg, f)
         
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
@@ -139,7 +133,9 @@ def load_env(label, headless=False):
 
 def play_go2(headless=True):
 
-    label = "improbableailab/dribbling/bvggoq26"
+    # label = "improbableailab/dribbling/bvggoq26"
+    label = "xander2077/dribbling/0bzdzy6s"
+    # label = "xander2077/dribbling/smdr6ns9"
     env, policy = load_env(label, headless=headless)
     # env: <HistoryWrapper<VelocityTrackingEasyEnv instance>>
 
