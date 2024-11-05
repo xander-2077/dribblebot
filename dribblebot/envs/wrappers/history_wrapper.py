@@ -22,6 +22,11 @@ class HistoryWrapper(gym.Wrapper):
         obs, rew, done, info = self.env.step(action)
         privileged_obs = info["privileged_obs"]
 
+        # # TODO: FOR TEST
+        # # obs[:, :3] = [0.27402842, -0.04910268, 0.0]
+        # obs[:, 0] = 0.27402842
+        # obs[:, 1] = -0.04910268
+        
         self.obs_history = torch.cat((self.obs_history[:, self.env.num_obs:], obs), dim=-1)   # 滚动式更新历史观测
         # print("obs: ", obs)
         return {'obs': obs, 'privileged_obs': privileged_obs, 'obs_history': self.obs_history}, rew, done, info

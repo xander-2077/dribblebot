@@ -25,6 +25,7 @@ radar: 0.28945 0 -0.046825
 "OrientationSensor",    # 3 [3:6]
 重力单位向量: projected_gravity 需要除以norm
 
+
 "RCSensor",             # 15 [6:21]
 self.env.commands * self.env.commands_scale
 0: x_vel  scale: 2.0
@@ -91,7 +92,7 @@ bounds = self.commands[:, 7]    (0.0)
 
 "YawSensor",            # 1 [73:74] 
 与规定的forward_vec的夹角
-部署时需要使用IMU积分
+部署时使用IMU的rpy即可
 机器狗在第一个时间步的局部身体坐标系作为全局参考系
 (-pi, pi)
 
@@ -214,7 +215,27 @@ def _compute_torques(self, actions):
     torques = torques * self.motor_strengths
     return torch.clip(torques, -self.torque_limits, self.torque_limits)
 ```
-
+joint props:
+```
+array([( True, -1.0472,  1.0472 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -1.5708,  3.4907 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -2.7227, -0.83776, 3, 15.7, 45.43, 0., 0., 0., 0.),
+       ( True, -1.0472,  1.0472 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -1.5708,  3.4907 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -2.7227, -0.83776, 3, 15.7, 45.43, 0., 0., 0., 0.),
+       ( True, -1.0472,  1.0472 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -0.5236,  4.5379 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -2.7227, -0.83776, 3, 15.7, 45.43, 0., 0., 0., 0.),
+       ( True, -1.0472,  1.0472 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -0.5236,  4.5379 , 3, 30.1, 23.7 , 0., 0., 0., 0.),
+       ( True, -2.7227, -0.83776, 3, 15.7, 45.43, 0., 0., 0., 0.)],
+      dtype={
+        'names': ['hasLimits', 'lower', 'upper', 'driveMode', 'velocity', 'effort', 'stiffness', 'damping', 'friction', 'armature'], 
+        'formats': ['?', '<f4', '<f4', '<i4', '<f4', '<f4', '<f4', '<f4', '<f4', '<f4'], 
+        'offsets': [0, 4, 8, 12, 16, 20, 24, 28, 32, 36], 
+        'itemsize': 40}
+     )
+```
 
 ## Recovery controller
 

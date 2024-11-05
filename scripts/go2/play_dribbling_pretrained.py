@@ -3,7 +3,7 @@ import isaacgym
 assert isaacgym
 import torch
 import numpy as np
-import glob
+import glob, os
 
 from dribblebot.envs import *
 from dribblebot.envs.base.legged_robot_config import Cfg
@@ -13,10 +13,10 @@ from dribblebot.envs.go2.velocity_tracking import VelocityTrackingEasyEnv
 from tqdm import tqdm
 
 def load_policy(logdir):
-    # body = torch.jit.load(logdir + '/body.jit', map_location="cpu")
-    # adaptation_module = torch.jit.load(logdir + '/adaptation_module.jit', map_location='cpu')
-    body = torch.jit.load('/home/xander/Downloads/ckpt/body_56000.jit', map_location="cpu")
-    adaptation_module = torch.jit.load('/home/xander/Downloads/ckpt/adaptation_module_56000.jit', map_location='cpu')
+    body_path = glob.glob(os.path.join(logdir, 'body*'))[0]
+    adaptation_module_path = glob.glob(os.path.join(logdir, 'adaptation_module*'))[0]
+    body = torch.jit.load(body_path, map_location="cpu")
+    adaptation_module = torch.jit.load(adaptation_module_path, map_location='cpu')
 
     def policy(obs, info={}):
         """
@@ -151,7 +151,7 @@ def play_go2(headless=True):
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
 
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, -1.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])

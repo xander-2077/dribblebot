@@ -117,7 +117,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]   # default: [0.7, 4.0] change2: [0.4, 1.5]
+    Cfg.domain_rand.ground_friction_range = [0.5, 1.25]   # default: [0.7, 4.0] change2: [0.4, 1.5], [0.5, 1.25]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
