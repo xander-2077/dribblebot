@@ -26,8 +26,8 @@ class Cfg(PrefixProto, cli=False):
 
     class ball(PrefixProto, cli=False):
         asset = "ball"
-        mass = 0.318
-        radius = 0.0889
+        mass = 0.15   # default: 0.318, real ball: 0.15
+        radius = 0.1    # default: 0.0889  real ball: 0.1
         ball_init_pos = [0.0, 0.0, 0.50]
         ball_init_rot = [0, 0, 0, 1]
         ball_init_lin_vel = [0, 0, 0]

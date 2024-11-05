@@ -145,7 +145,7 @@ def play_go2(headless=True):
     # label = "xander2077/dribbling/smdr6ns9"
     env, policy = load_env(label, headless=headless)
 
-    num_eval_steps = 5000  # 本地测试时，可以设置为5000
+    num_eval_steps = 500  # 本地测试时，可以设置为5000
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
@@ -163,6 +163,7 @@ def play_go2(headless=True):
     measured_x_vels = np.zeros(num_eval_steps)
     target_x_vels = np.ones(num_eval_steps) * x_vel_cmd
     joint_positions = np.zeros((num_eval_steps, 12))
+    action_list = np.zeros((num_eval_steps, 12))
 
     # import imageio
     # mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
@@ -211,6 +212,7 @@ def play_go2(headless=True):
             save_observation_to_file(obs["obs"], mode="a")
         measured_x_vels[i] = env.base_lin_vel[0, 0]
         joint_positions[i] = env.dof_pos[0, :].cpu()
+        action_list[i] = actions[0].cpu()
         ep_rew += rew
 
         img = env.render(mode='rgb_array')
@@ -220,7 +222,11 @@ def play_go2(headless=True):
         out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)
 
     # mp4_writer.close()
-
+    
+    action_list = action_list * 0.25
+    np.save("action_list", action_list, allow_pickle=False)
+    np.save("joint_positions", joint_positions, allow_pickle=False)
+    
     # plot target and measured forward velocity
     from matplotlib import pyplot as plt
     fig, axs = plt.subplots(2, 1, figsize=(12, 5))
@@ -241,5 +247,4 @@ def play_go2(headless=True):
 
 
 if __name__ == '__main__':
-    # to see the environment rendering, set headless=False
     play_go2(headless=False)
