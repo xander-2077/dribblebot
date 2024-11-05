@@ -16,8 +16,8 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_go2(Cfg)
+    
     Cfg.env.num_envs = number_envs  # default: 4096
-
     Cfg.robot.name = "go2"
     Cfg.sensors.sensor_names = [
                         "ObjectSensor",
@@ -68,20 +68,20 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     Cfg.domain_rand.randomize_rigids_after_start = False
     # Cfg.domain_rand.randomize_friction_indep = False
-    Cfg.domain_rand.randomize_restitution = False  # True
-    Cfg.domain_rand.restitution_range = [0.0, 0.4]
+    Cfg.domain_rand.randomize_restitution = False   # True
+    # Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.randomize_base_mass = True
-    Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
+    # Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.randomize_gravity = False
-    Cfg.domain_rand.gravity_range = [-1.0, 1.0]
+    # Cfg.domain_rand.gravity_range = [-1.0, 1.0]
     Cfg.domain_rand.gravity_rand_interval_s = 8.0
     Cfg.domain_rand.gravity_impulse_duration = 0.99
     Cfg.domain_rand.randomize_com_displacement = False
     Cfg.domain_rand.com_displacement_range = [-0.15, 0.15]
     Cfg.domain_rand.randomize_motor_strength = True
-    Cfg.domain_rand.motor_strength_range = [0.99, 1.01]
+    # Cfg.domain_rand.motor_strength_range = [0.99, 1.01]
     Cfg.domain_rand.randomize_motor_offset = True
-    Cfg.domain_rand.motor_offset_range = [-0.002, 0.002]
+    # Cfg.domain_rand.motor_offset_range = [-0.002, 0.002]
     Cfg.domain_rand.push_robots = False
     Cfg.domain_rand.randomize_Kp_factor = True
     Cfg.domain_rand.randomize_Kd_factor = True
@@ -110,7 +110,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.5, 1.25]   # default: [0.7, 4.0] change2: [0.4, 1.5], [0.5, 1.25]
+    Cfg.domain_rand.ground_friction_range = [0.1, 1.25]   # default: [0.7, 4.0] change2: [0.4, 1.5], [0.1, 1.25]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
@@ -243,7 +243,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.5, 1.25]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5], [0.5, 1.25]
+    Cfg.normalization.ground_friction_range = [0.1, 1.25]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5], [0.1, 1.25]
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
  
@@ -261,7 +261,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     RunnerArgs.save_video_interval = 500
     RunnerArgs.resume = resume_flag
-    RunnerArgs.resume_checkpoint = 'ac_weights.pt'  # TODO: checkpoint
+    RunnerArgs.resume_checkpoint = '/home/zdj/data/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'  # TODO: checkpoint
 
     wandb.init(
       # set the wandb project where this run will be logged
@@ -291,4 +291,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2FromScratchFrictionControlNet", device='cuda:0', number_envs=2000)
+    train_go2(use_wandb=True, resume_flag=True, exp_name="Go2ResumeGo1FrictionControlNet", device='cuda:1', number_envs=2000)
