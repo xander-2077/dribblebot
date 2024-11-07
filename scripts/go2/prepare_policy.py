@@ -61,8 +61,8 @@ def load_and_save_policy(run_path, label):
 
 if __name__ == '__main__':
 
-    run_path = "xander2077/dribbling/wks8c7nc"
-    label = "Go2FromScratchFrictionControlNet"
+    run_path = "xander2077/dribbling/sxvnk9tu"
+    label = "Go2ResumeGo1FrictionControlNet"
     
 
     load_and_save_policy(run_path, label)
