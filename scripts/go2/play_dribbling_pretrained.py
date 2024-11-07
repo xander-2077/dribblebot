@@ -119,7 +119,8 @@ def load_env(label, headless=False):
     }
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
-    Cfg.control.control_type = "actuator_net"
+    # Cfg.control.control_type = "P"
+    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
     Cfg.env.num_privileged_obs = 6
     
     import inspect, os
@@ -141,17 +142,19 @@ def load_env(label, headless=False):
 def play_go2(headless=True):
 
     # label = "improbableailab/dribbling/bvggoq26"
-    label = "xander2077/dribbling/0bzdzy6s"
+    # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
+    # label = "xander2077/dribbling/cdmgbim9"
+    label = "xander2077/dribbling/wks8c7nc"
     env, policy = load_env(label, headless=headless)
 
-    num_eval_steps = 500  # 本地测试时，可以设置为5000
+    num_eval_steps = 5000  # 本地测试时，可以设置为5000
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
 
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, -1.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])
