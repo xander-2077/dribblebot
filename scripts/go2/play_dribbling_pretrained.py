@@ -118,9 +118,9 @@ def load_env(label, headless=False):
                         "ObjectVelocitySensor": {},
     }
     Cfg.domain_rand.lag_timesteps = 6
-    Cfg.domain_rand.randomize_lag_timesteps = True
-    # Cfg.control.control_type = "P"
-    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
+    Cfg.domain_rand.randomize_lag_timesteps = False
+    Cfg.control.control_type = "P"
+    # Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
     Cfg.env.num_privileged_obs = 6
     
     import inspect, os
@@ -138,7 +138,31 @@ def load_env(label, headless=False):
     policy = load_policy(logdir)
     return env, policy
 
-
+def log_to_file(obs, action, filename="record.txt", mode="a"):
+    obs = obs.squeeze().cpu().numpy()
+    action = action.squeeze().cpu().numpy()
+    sensor_info = {
+        "ObjectSensor": obs[0:3],
+        "OrientationSensor": obs[3:6],
+        "RCSensor": obs[6:21],
+        "JointPositionSensor": obs[21:33],
+        "JointVelocitySensor": obs[33:45],
+        "ActionSensor": obs[45:57],
+        "ActionSensor_last": obs[57:69],
+        "ClockSensor": obs[69:73],
+        "YawSensor": obs[73:74],
+        "TimingSensor": obs[74:75],
+    }
+    import os 
+    file_path = os.path.join("record", filename)
+    with open(file_path, mode) as file:
+        for sensor_name, sensor_values in sensor_info.items():
+            file.write(f"{sensor_name}: {sensor_values}\n")
+        file.write("-" * 20 + "\n")
+        file.write(f"Action: {action}\n")
+        file.write("-" * 40 + "\n")
+            
+            
 def play_go2(headless=True):
 
     # label = "improbableailab/dribbling/bvggoq26"
@@ -148,7 +172,7 @@ def play_go2(headless=True):
     label = "xander2077/dribbling/wks8c7nc"
     env, policy = load_env(label, headless=headless)
 
-    num_eval_steps = 5000  # 本地测试时，可以设置为5000
+    num_eval_steps = 500  # 本地测试时，可以设置为5000
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
@@ -167,34 +191,19 @@ def play_go2(headless=True):
     target_x_vels = np.ones(num_eval_steps) * x_vel_cmd
     joint_positions = np.zeros((num_eval_steps, 12))
     action_list = np.zeros((num_eval_steps, 12))
-
+    joint_pos_target = np.zeros((num_eval_steps, 12))
+    
     # import imageio
     # mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
-
-    def save_observation_to_file(obs, filename="observation_output.txt", mode="a"):
-        obs = obs.squeeze().cpu().numpy()
-        sensor_info = {
-            "ObjectSensor": obs[0:3],
-            "OrientationSensor": obs[3:6],
-            "RCSensor": obs[6:21],
-            "JointPositionSensor": obs[21:33],
-            "JointVelocitySensor": obs[33:45],
-            "ActionSensor": obs[45:57],
-            "ActionSensor_last": obs[57:69],
-            "ClockSensor": obs[69:73],
-            "YawSensor": obs[73:74],
-            "TimingSensor": obs[74:75]
-        }
-        import os
-        file_path = os.path.join("record", filename)
-        with open(file_path, mode) as file:
-            for sensor_name, sensor_values in sensor_info.items():
-                file.write(f"{sensor_name}: {sensor_values}\n")
-            file.write("-" * 40 + "\n")
+    store_obs = np.load("record/store_obs.npy")
+    store_obs_tensor = torch.tensor(store_obs).reshape(500, -1).to("cuda:0")    
 
     obs = env.reset()
     ep_rew = 0
     for i in tqdm(range(num_eval_steps)):
+        
+        obs["obs_history"] = store_obs_tensor[i].unsqueeze(0)
+        
         with torch.no_grad():
             actions = policy(obs)
         env.commands[:, 0] = x_vel_cmd              # 0.0 * 2
@@ -209,16 +218,21 @@ def play_go2(headless=True):
         env.commands[:, 11] = roll_cmd              # 0.0 * 0.3
         env.commands[:, 12] = stance_width_cmd      # 0.0
         obs, rew, done, info = env.step(actions)
+        
         if i == 0:
-            save_observation_to_file(obs["obs"], mode="w")
+            log_to_file(obs["obs"], actions, mode="w")
         else:
-            save_observation_to_file(obs["obs"], mode="a")
+            log_to_file(obs["obs"], actions, mode="a")
+            
         measured_x_vels[i] = env.base_lin_vel[0, 0]
-        joint_positions[i] = env.dof_pos[0, :].cpu()
-        action_list[i] = actions[0].cpu()
+        # joint_positions[i] = env.dof_pos[0, :].cpu()
+        joint_positions[i] = obs["obs"].squeeze()[21:33].cpu()
+        action_list[i] = actions[0]
+        # joint_pos_target[i] = env.joint_pos_target[0].cpu()
+        
         ep_rew += rew
 
-        img = env.render(mode='rgb_array')
+        # img = env.render(mode='rgb_array')
         # mp4_writer.append_data(img)
 
         out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
@@ -227,6 +241,39 @@ def play_go2(headless=True):
     # mp4_writer.close()
     
     action_list = action_list * 0.25
+    action_list[:, [0, 3, 6, 9]] *= 0.5
+    # joint_positions = joint_positions - env.default_dof_pos.repeat(num_eval_steps, 1).cpu().numpy()
+    from matplotlib import pyplot as plt
+    # plt.plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), action_list[:, 0], linestyle="-", label="action")
+    # plt.plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), joint_positions[:, 0], linestyle="--", label="joint_pos")
+    # plt.legend()
+    # plt.show()
+    time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
+
+    # 创建 3x4 的子图网格
+    fig, axes = plt.subplots(3, 4, figsize=(15, 10))
+    fig.suptitle("Action and Joint Position for All 12 Joints", fontsize=16)
+
+    # 绘制每个关节的动作曲线和位置曲线
+    for i in range(12):
+        row = i // 4
+        col = i % 4
+        ax = axes[row, col]
+        
+        ax.plot(time, action_list[:, i], linestyle="-", label="Action", color="b")
+        ax.plot(time, joint_positions[:, i], linestyle="--", label="Joint Position", color="r")
+        # ax.plot(time, joint_pos_target[:, i], linestyle="-.", label="Joint Pos Target", color="g")
+        ax.set_title(f"Joint {i}")
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Value")
+        ax.legend()
+
+    # 自动调整子图布局
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # 留出标题空间
+    plt.show()
+
+    breakpoint()
+    
     np.save("action_list", action_list, allow_pickle=False)
     np.save("joint_positions", joint_positions, allow_pickle=False)
     
