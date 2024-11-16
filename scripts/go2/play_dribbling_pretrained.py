@@ -1,16 +1,15 @@
 import isaacgym
-
 assert isaacgym
 import torch
 import numpy as np
 import glob, os
-
+from tqdm import tqdm
+from matplotlib import pyplot as plt
 from dribblebot.envs import *
 from dribblebot.envs.base.legged_robot_config import Cfg
 from dribblebot.envs.go2.go2_config import config_go2
 from dribblebot.envs.go2.velocity_tracking import VelocityTrackingEasyEnv
 
-from tqdm import tqdm
 
 def load_policy(logdir):
     body_path = glob.glob(os.path.join(logdir, 'body*'))[0]
@@ -93,7 +92,7 @@ def load_env(label, headless=False):
                         "ActionSensor",         # 12 [45:57]
                         "ActionSensor",         # 12 [57:69]
                         "ClockSensor",          # 4 [69:73]
-                        "YawSensor",            # 1 [73:74] 部署时需要积分
+                        "YawSensor",            # 1 [73:74]
                         "TimingSensor",         # 1 [74:75]
                         ]
     Cfg.sensors.sensor_args = {
@@ -127,12 +126,13 @@ def load_env(label, headless=False):
     Cfg_source = inspect.getsource(Cfg)
     config_path = os.path.join("play_config_cls", "config.py")
     with open(config_path, "w") as f:
+        f.write("# Come from play_dribbling_pretrained.py to store config of playing.\n")
         f.write("from params_proto import PrefixProto, ParamsProto\n\n")
         f.write(Cfg_source)
         
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
-    env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
     env = HistoryWrapper(env)
 
     policy = load_policy(logdir)
@@ -165,20 +165,20 @@ def log_to_file(obs, action, filename="record.txt", mode="a"):
             
 def play_go2(headless=True):
 
-    # label = "improbableailab/dribbling/bvggoq26"
+    label = "improbableailab/dribbling/bvggoq26"
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
     # label = "xander2077/dribbling/cdmgbim9"
-    label = "xander2077/dribbling/wks8c7nc"
+    # label = "xander2077/dribbling/wks8c7nc"
+    
     env, policy = load_env(label, headless=headless)
-
-    num_eval_steps = 500  # 本地测试时，可以设置为5000
+    num_eval_steps = 500  # default: 5000
+    
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
-
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, -1.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])
@@ -187,14 +187,15 @@ def play_go2(headless=True):
     roll_cmd = 0.0
     stance_width_cmd = 0.0
 
+    # record variables
     measured_x_vels = np.zeros(num_eval_steps)
     target_x_vels = np.ones(num_eval_steps) * x_vel_cmd
     joint_positions = np.zeros((num_eval_steps, 12))
+    
     action_list = np.zeros((num_eval_steps, 12))
     joint_pos_target = np.zeros((num_eval_steps, 12))
     
-    # import imageio
-    # mp4_writer = imageio.get_writer('dribbling.mp4', fps=50)
+    # if to use the stored observation
     store_obs = np.load("record/store_obs.npy")
     store_obs_tensor = torch.tensor(store_obs).reshape(500, -1).to("cuda:0")    
 
@@ -202,10 +203,12 @@ def play_go2(headless=True):
     ep_rew = 0
     for i in tqdm(range(num_eval_steps)):
         
-        obs["obs_history"] = store_obs_tensor[i].unsqueeze(0)
+        # If to use the stored observation
+        # obs["obs_history"] = store_obs_tensor[i].unsqueeze(0)
         
         with torch.no_grad():
             actions = policy(obs)
+
         env.commands[:, 0] = x_vel_cmd              # 0.0 * 2
         env.commands[:, 1] = y_vel_cmd              # -1.0 * 2
         env.commands[:, 2] = yaw_vel_cmd            # 0.0 * 0.25
@@ -217,6 +220,7 @@ def play_go2(headless=True):
         env.commands[:, 10] = pitch_cmd             # 0.0 * 0.3
         env.commands[:, 11] = roll_cmd              # 0.0 * 0.3
         env.commands[:, 12] = stance_width_cmd      # 0.0
+        
         obs, rew, done, info = env.step(actions)
         
         if i == 0:
@@ -232,29 +236,18 @@ def play_go2(headless=True):
         
         ep_rew += rew
 
-        # img = env.render(mode='rgb_array')
-        # mp4_writer.append_data(img)
-
         out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
         out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)
-
-    # mp4_writer.close()
     
+    
+    # plot joint positions and actions
     action_list = action_list * 0.25
     action_list[:, [0, 3, 6, 9]] *= 0.5
-    # joint_positions = joint_positions - env.default_dof_pos.repeat(num_eval_steps, 1).cpu().numpy()
-    from matplotlib import pyplot as plt
-    # plt.plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), action_list[:, 0], linestyle="-", label="action")
-    # plt.plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), joint_positions[:, 0], linestyle="--", label="joint_pos")
-    # plt.legend()
-    # plt.show()
-    time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
 
-    # 创建 3x4 的子图网格
+    time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
     fig, axes = plt.subplots(3, 4, figsize=(15, 10))
     fig.suptitle("Action and Joint Position for All 12 Joints", fontsize=16)
 
-    # 绘制每个关节的动作曲线和位置曲线
     for i in range(12):
         row = i // 4
         col = i % 4
@@ -268,17 +261,14 @@ def play_go2(headless=True):
         ax.set_ylabel("Value")
         ax.legend()
 
-    # 自动调整子图布局
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # 留出标题空间
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
-
-    breakpoint()
     
-    np.save("action_list", action_list, allow_pickle=False)
-    np.save("joint_positions", joint_positions, allow_pickle=False)
+    # save data
+    np.save("./record/action_list", action_list, allow_pickle=False)
+    np.save("./record/joint_positions", joint_positions, allow_pickle=False)
     
     # plot target and measured forward velocity
-    from matplotlib import pyplot as plt
     fig, axs = plt.subplots(2, 1, figsize=(12, 5))
     axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), measured_x_vels, color='black', linestyle="-", label="Measured")
     axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), target_x_vels, color='black', linestyle="--", label="Desired")
