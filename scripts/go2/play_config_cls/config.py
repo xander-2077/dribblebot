@@ -1,3 +1,4 @@
+# Come from play_dribbling_pretrained.py to store config of playing.
 from params_proto import PrefixProto, ParamsProto
 
 class Cfg(PrefixProto, cli=False):

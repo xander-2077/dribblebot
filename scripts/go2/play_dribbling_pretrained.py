@@ -118,17 +118,17 @@ def load_env(label, headless=False):
     }
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = False
-    Cfg.control.control_type = "P"
-    # Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
+    # Cfg.control.control_type = "P"
+    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
     Cfg.env.num_privileged_obs = 6
     
-    import inspect, os
-    Cfg_source = inspect.getsource(Cfg)
-    config_path = os.path.join("play_config_cls", "config.py")
-    with open(config_path, "w") as f:
-        f.write("# Come from play_dribbling_pretrained.py to store config of playing.\n")
-        f.write("from params_proto import PrefixProto, ParamsProto\n\n")
-        f.write(Cfg_source)
+    # import inspect, os
+    # Cfg_source = inspect.getsource(Cfg)
+    # config_path = os.path.join("play_config_cls", "config.py")
+    # with open(config_path, "w") as f:
+    #     f.write("# Come from play_dribbling_pretrained.py to store config of playing.\n")
+    #     f.write("from params_proto import PrefixProto, ParamsProto\n\n")
+    #     f.write(Cfg_source)
         
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
@@ -163,21 +163,54 @@ def log_to_file(obs, action, filename="record.txt", mode="a"):
         file.write("-" * 40 + "\n")
             
             
-def play_go2(headless=True):
+def play_go2(headless=True, use_joystick=False, plot=False):
 
-    label = "improbableailab/dribbling/bvggoq26"
+    # label = "improbableailab/dribbling/bvggoq26"
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
-    # label = "xander2077/dribbling/cdmgbim9"
+    label = "xander2077/dribbling/cdmgbim9"
     # label = "xander2077/dribbling/wks8c7nc"
     
     env, policy = load_env(label, headless=headless)
-    num_eval_steps = 500  # default: 5000
+    num_eval_steps = 5000  # default: 5000
     
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
+    
+    if use_joystick:
+        import pygame
+        pygame.init()
+        pygame.joystick.init()
+        joystick_count = pygame.joystick.get_count()
+        if joystick_count == 0:
+            raise Exception("No joystick detected")
+        else:
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
+            
+        axis_id = {
+            "LX": 0,  # Left stick axis x
+            "LY": 1,  # Left stick axis y
+            "RX": 3,  # Right stick axis x
+            "RY": 4,  # Right stick axis y
+            "LT": 2,  # Left trigger
+            "RT": 5,  # Right trigger
+            "DX": 6,  # Directional pad x
+            "DY": 7,  # Directional pad y
+        }
+        button_id = {
+            "X": 2,
+            "Y": 3,
+            "B": 1,
+            "A": 0,
+            "LB": 4,
+            "RB": 5,
+            "SELECT": 6,
+            "START": 7,
+        }
+    
     x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
@@ -195,23 +228,28 @@ def play_go2(headless=True):
     action_list = np.zeros((num_eval_steps, 12))
     joint_pos_target = np.zeros((num_eval_steps, 12))
     
-    # if to use the stored observation
-    store_obs = np.load("record/store_obs.npy")
-    store_obs_tensor = torch.tensor(store_obs).reshape(500, -1).to("cuda:0")    
+    # # if to use the stored observation
+    # store_obs = np.load("record/store_obs.npy")
+    # store_obs_tensor = torch.tensor(store_obs).reshape(500, -1).to("cuda:0")    
 
     obs = env.reset()
     ep_rew = 0
     for i in tqdm(range(num_eval_steps)):
         
-        # If to use the stored observation
+        # # If to use the stored observation
         # obs["obs_history"] = store_obs_tensor[i].unsqueeze(0)
         
         with torch.no_grad():
             actions = policy(obs)
 
-        env.commands[:, 0] = x_vel_cmd              # 0.0 * 2
-        env.commands[:, 1] = y_vel_cmd              # -1.0 * 2
-        env.commands[:, 2] = yaw_vel_cmd            # 0.0 * 0.25
+        if use_joystick:
+            pygame.event.get()
+            x_vel_cmd = joystick.get_axis(axis_id["LX"])
+            y_vel_cmd = -joystick.get_axis(axis_id["LY"])
+        
+        env.commands[:, 0] = x_vel_cmd              #  * 2
+        env.commands[:, 1] = y_vel_cmd              #  * 2
+        env.commands[:, 2] = yaw_vel_cmd            #  * 0.25
         env.commands[:, 3] = body_height_cmd        # 0.0 * 2
         env.commands[:, 4] = step_frequency_cmd     # 3.0
         env.commands[:, 5:8] = gait                 # [0.5, 0, 0]
@@ -222,69 +260,68 @@ def play_go2(headless=True):
         env.commands[:, 12] = stance_width_cmd      # 0.0
         
         obs, rew, done, info = env.step(actions)
-        
-        if i == 0:
-            log_to_file(obs["obs"], actions, mode="w")
-        else:
-            log_to_file(obs["obs"], actions, mode="a")
-            
-        measured_x_vels[i] = env.base_lin_vel[0, 0]
-        # joint_positions[i] = env.dof_pos[0, :].cpu()
-        joint_positions[i] = obs["obs"].squeeze()[21:33].cpu()
-        action_list[i] = actions[0]
-        # joint_pos_target[i] = env.joint_pos_target[0].cpu()
-        
         ep_rew += rew
 
-        out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
-        out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)
-    
-    
-    # plot joint positions and actions
-    action_list = action_list * 0.25
-    action_list[:, [0, 3, 6, 9]] *= 0.5
-
-    time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
-    fig, axes = plt.subplots(3, 4, figsize=(15, 10))
-    fig.suptitle("Action and Joint Position for All 12 Joints", fontsize=16)
-
-    for i in range(12):
-        row = i // 4
-        col = i % 4
-        ax = axes[row, col]
+        # if i == 0:
+        #     log_to_file(obs["obs"], actions, mode="w")
+        # else:
+        #     log_to_file(obs["obs"], actions, mode="a")
         
-        ax.plot(time, action_list[:, i], linestyle="-", label="Action", color="b")
-        ax.plot(time, joint_positions[:, i], linestyle="--", label="Joint Position", color="r")
-        # ax.plot(time, joint_pos_target[:, i], linestyle="-.", label="Joint Pos Target", color="g")
-        ax.set_title(f"Joint {i}")
-        ax.set_xlabel("Time")
-        ax.set_ylabel("Value")
-        ax.legend()
+        if plot:    
+            measured_x_vels[i] = env.base_lin_vel[0, 0]
+            joint_positions[i] = obs["obs"].squeeze()[21:33].cpu()
+            action_list[i] = actions[0]
+            
+            out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
+            out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)  # upper limit
+    
+    if plot:
+        # plot joint positions and actions
+        action_list = action_list * 0.25
+        action_list[:, [0, 3, 6, 9]] *= 0.5
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.show()
+        time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
+        fig, axes = plt.subplots(3, 4, figsize=(15, 10))
+        fig.suptitle("Action and Joint Position for All 12 Joints", fontsize=16)
+
+        for i in range(12):
+            row = i // 4
+            col = i % 4
+            ax = axes[row, col]
+            
+            ax.plot(time, action_list[:, i], linestyle="-", label="Action", color="b")
+            ax.plot(time, joint_positions[:, i], linestyle="--", label="Joint Position", color="r")
+            # ax.plot(time, joint_pos_target[:, i], linestyle="-.", label="Joint Pos Target", color="g")
+            ax.set_title(f"Joint {i}")
+            ax.set_xlabel("Time")
+            ax.set_ylabel("Value")
+            ax.legend()
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.show()
     
     # save data
     np.save("./record/action_list", action_list, allow_pickle=False)
     np.save("./record/joint_positions", joint_positions, allow_pickle=False)
     
-    # plot target and measured forward velocity
-    fig, axs = plt.subplots(2, 1, figsize=(12, 5))
-    axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), measured_x_vels, color='black', linestyle="-", label="Measured")
-    axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), target_x_vels, color='black', linestyle="--", label="Desired")
-    axs[0].legend()
-    axs[0].set_title("Forward Linear Velocity")
-    axs[0].set_xlabel("Time (s)")
-    axs[0].set_ylabel("Velocity (m/s)")
+    if plot:
+        # plot target and measured forward velocity
+        fig, axs = plt.subplots(2, 1, figsize=(12, 5))
+        axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), measured_x_vels, color='black', linestyle="-", label="Measured")
+        axs[0].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), target_x_vels, color='black', linestyle="--", label="Desired")
+        axs[0].legend()
+        axs[0].set_title("Forward Linear Velocity")
+        axs[0].set_xlabel("Time (s)")
+        axs[0].set_ylabel("Velocity (m/s)")
 
-    axs[1].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), joint_positions, linestyle="-", label="Measured")
-    axs[1].set_title("Joint Positions")
-    axs[1].set_xlabel("Time (s)")
-    axs[1].set_ylabel("Joint Position (rad)")
+        axs[1].plot(np.linspace(0, num_eval_steps * env.dt, num_eval_steps), joint_positions, linestyle="-", label="Measured")
+        axs[1].set_title("Joint Positions")
+        axs[1].set_xlabel("Time (s)")
+        axs[1].set_ylabel("Joint Position (rad)")
 
-    plt.tight_layout()
-    plt.show()
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == '__main__':
-    play_go2(headless=False)
+    play_go2(headless=False, use_joystick=True, plot=False)
