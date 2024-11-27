@@ -367,8 +367,8 @@ class LeggedRobot(BaseTask):
             self.privileged_obs_buf += [sensor.get_observation()]
         self.privileged_obs_buf = torch.reshape(torch.cat(self.privileged_obs_buf, dim=-1), (self.num_envs, -1))
         # TODO: add noise if needed
-        # if self.cfg.noise.add_noise:
-        #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+        if self.cfg.noise.add_noise:
+            self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
 
 
     def create_sim(self):
@@ -722,7 +722,7 @@ class LeggedRobot(BaseTask):
             self.command_sums[key][env_ids] = 0.
             
         # respect command constriction
-        self._update_command_ranges(env_ids)  # TODO: 1
+        self._update_command_ranges(env_ids)
             
         # heading commands
         if self.cfg.commands.heading_command:  # False
