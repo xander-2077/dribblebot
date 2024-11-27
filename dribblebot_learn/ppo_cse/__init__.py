@@ -151,7 +151,6 @@ class Runner:
 
         tot_iter = self.current_learning_iteration + num_learning_iterations
         for it in tqdm(range(self.current_learning_iteration, tot_iter)):
-            # for it in range(self.current_learning_iteration, tot_iter):
             start = time.time()
             # Rollout
             with torch.inference_mode():
