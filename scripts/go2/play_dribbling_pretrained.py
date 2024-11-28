@@ -172,13 +172,13 @@ def play_go2(headless=True):
     # label = "xander2077/dribbling/wks8c7nc"
     
     env, policy = load_env(label, headless=headless)
-    num_eval_steps = 500  # default: 5000
+    num_eval_steps = 5000  # default: 5000
     
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, -1.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])

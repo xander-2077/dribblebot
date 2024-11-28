@@ -38,6 +38,7 @@ class SoccerRewards(Rewards):
         return torch.sum(torch.square(self.env.last_actions - self.env.actions), dim=1)
     
     def _reward_tracking_contacts_shaped_force(self):   # √
+        """惩罚与phase不同的足底接触力"""
         foot_forces = torch.norm(self.env.contact_forces[:, self.env.feet_indices, :], dim=-1)
         desired_contact = self.env.desired_contact_states
 
