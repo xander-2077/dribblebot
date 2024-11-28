@@ -372,12 +372,14 @@ class Runner:
             wandb.log({"video": wandb.Video(video_array, fps=1 / self.env.dt)}, step=it)
 
     def get_inference_policy(self, device=None):
+        """Not in use"""
         self.alg.actor_critic.eval()  # switch to evaluation mode (dropout for example)
         if device is not None:
             self.alg.actor_critic.to(device)
         return self.alg.actor_critic.act_inference
 
     def get_expert_policy(self, device=None):
+        """Not in use"""
         self.alg.actor_critic.eval()  # switch to evaluation mode (dropout for example)
         if device is not None:
             self.alg.actor_critic.to(device)

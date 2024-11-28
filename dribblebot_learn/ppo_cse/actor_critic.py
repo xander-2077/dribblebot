@@ -62,8 +62,6 @@ class ActorCritic(nn.Module):
                 adaptation_module_layers.append(activation)
         self.adaptation_module = nn.Sequential(*adaptation_module_layers)
 
-
-
         # Policy
         actor_layers = []
         actor_layers.append(nn.Linear(self.num_privileged_obs + self.num_obs_history, AC_Args.actor_hidden_dims[0]))
@@ -135,18 +133,22 @@ class ActorCritic(nn.Module):
         return self.distribution.log_prob(actions).sum(dim=-1)
 
     def act_expert(self, ob, policy_info={}):
+        """Not in use"""
         return self.act_teacher(ob["obs_history"], ob["privileged_obs"])
 
     def act_inference(self, ob, policy_info={}):
+        """Not in use"""
         return self.act_student(ob["obs_history"], policy_info=policy_info)
 
     def act_student(self, observation_history, policy_info={}):
+        """Not in use"""
         latent = self.adaptation_module(observation_history)
         actions_mean = self.actor_body(torch.cat((observation_history, latent), dim=-1))
         policy_info["latents"] = latent.detach().cpu().numpy()
         return actions_mean
 
     def act_teacher(self, observation_history, privileged_info, policy_info={}):
+        """Not in use"""
         actions_mean = self.actor_body(torch.cat((observation_history, privileged_info), dim=-1))
         policy_info["latents"] = privileged_info
         return actions_mean

@@ -324,4 +324,4 @@ def play_go2(headless=True, use_joystick=False, plot=False):
 
 
 if __name__ == '__main__':
-    play_go2(headless=False, use_joystick=True, plot=False)
+    play_go2(headless=False, use_joystick=False, plot=False)
