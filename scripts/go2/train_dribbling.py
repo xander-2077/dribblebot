@@ -64,7 +64,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
-    Cfg.control.control_type = "actuator_net"   # TODO: "P" or "actuator_net"
+    Cfg.control.control_type = "P"   # TODO: "P" or "actuator_net"
 
     Cfg.domain_rand.randomize_rigids_after_start = False
     # Cfg.domain_rand.randomize_friction_indep = False
@@ -110,7 +110,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
-    Cfg.domain_rand.ground_friction_range = [0.1, 1.25]   # default: [0.7, 4.0] change2: [0.4, 1.5], [0.1, 1.25]
+    Cfg.domain_rand.ground_friction_range = [0.4, 1.0]   # default: [0.7, 4.0] change2: [0.4, 1.5], [0.4, 1.0]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
@@ -207,16 +207,16 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.rewards.constrict = False
 
     # reward function
-    Cfg.reward_scales.orientation = -10.0   # TODO: default: -5.0
-    Cfg.reward_scales.torques = -0.0002   # TODO: default: -0.0001
-    Cfg.reward_scales.dof_vel = -0.0002   # TODO: default: -0.0001
+    Cfg.reward_scales.orientation = -5.0   # TODO: default: -5.0
+    Cfg.reward_scales.torques = -0.0001   # TODO: default: -0.0001
+    Cfg.reward_scales.dof_vel = -0.0001   # TODO: default: -0.0001
     Cfg.reward_scales.dof_acc = -2.5e-7
     Cfg.reward_scales.collision = -5.0
-    Cfg.reward_scales.action_rate = -0.02   # TODO: default: -0.01
-    Cfg.reward_scales.tracking_contacts_shaped_force = 8.0  # TODO: default: 4.0
-    Cfg.reward_scales.tracking_contacts_shaped_vel = 8.0   # TODO: default: 4.0
-    Cfg.reward_scales.dof_pos_limits = -20.0   # TODO: default: -10.0
-    Cfg.reward_scales.dof_pos = -0.1   # TODO: default: -0.05
+    Cfg.reward_scales.action_rate = -0.01   # TODO: default: -0.01
+    Cfg.reward_scales.tracking_contacts_shaped_force = 6.0  # TODO: default: 4.0
+    Cfg.reward_scales.tracking_contacts_shaped_vel = 6.0   # TODO: default: 4.0
+    Cfg.reward_scales.dof_pos_limits = -12.0   # TODO: default: -10.0
+    Cfg.reward_scales.dof_pos = -0.05   # TODO: default: -0.05
     Cfg.reward_scales.action_smoothness_1 = -0.1
     Cfg.reward_scales.action_smoothness_2 = -0.1
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
@@ -232,8 +232,8 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.reward_scales.ang_vel_xy = 0.0
     Cfg.reward_scales.feet_air_time = 0.0
 
-    Cfg.reward_scales.action_smoothness_1 = -0.2    # TODO: default: -0.1
-    Cfg.reward_scales.action_smoothness_2 = -0.2    # TODO: default: -0.1
+    Cfg.reward_scales.action_smoothness_1 = -0.1    # TODO: default: -0.1
+    Cfg.reward_scales.action_smoothness_2 = -0.1    # TODO: default: -0.1
     
     Cfg.rewards.kappa_gait_probs = 0.07
     Cfg.rewards.gait_force_sigma = 100.
@@ -246,7 +246,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.1, 1.25]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5], [0.1, 1.25]
+    Cfg.normalization.ground_friction_range = [0.4, 1.0]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5], [0.4, 1.0]
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
  
@@ -294,4 +294,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=True, exp_name="Go2ResumeGo1FrictionControlNet", device='cuda:1', number_envs=2000)
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2Finetuned", device='cuda:0', number_envs=2000)

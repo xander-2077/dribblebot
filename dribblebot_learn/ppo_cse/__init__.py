@@ -84,8 +84,8 @@ class Runner:
             # body = wandb.restore(RunnerArgs.resume_checkpoint, run_path=RunnerArgs.resume_path)
             # actor_critic.load_state_dict(torch.load(body.name))
             # print(f"Successfully loaded weights from checkpoint ({RunnerArgs.resume_checkpoint}) and run path ({RunnerArgs.resume_path})")
-            actor_critic.load_state_dict(torch.load(RunnerArgs.resume_checkpoint))
-
+            actor_critic.load_state_dict(torch.load(RunnerArgs.resume_checkpoint))    
+        
         self.alg = PPO(actor_critic, device=self.device)
         self.num_steps_per_env = RunnerArgs.num_steps_per_env
 
@@ -101,7 +101,7 @@ class Runner:
 
         self.tot_timesteps = 0
         self.tot_time = 0
-        self.current_learning_iteration = 0
+        self.current_learning_iteration = 0 if RunnerArgs.resume else 0   # TODO: if resume, we need confirm the current_learning_iteration
         self.last_recording_it = -RunnerArgs.save_video_interval
 
         self.env.reset()
@@ -342,11 +342,8 @@ class Runner:
                 wandb.save(f"./tmp/legged_data/body_latest.jit")
                 wandb.save(f"./tmp/legged_data/ac_weights_latest.pt")
 
-            self.current_learning_iteration += num_learning_iterations
+            self.current_learning_iteration += 1
 
-        path = "./tmp/legged_data"
-
-        os.makedirs(path, exist_ok=True)
 
     def log_video(self, it):
         if it - self.last_recording_it >= RunnerArgs.save_video_interval:
