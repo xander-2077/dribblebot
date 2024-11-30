@@ -1,12 +1,13 @@
-def train_go1(headless=True):
-
+def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', number_envs=1024):
+    
     import isaacgym
     assert isaacgym
     import torch
+    import wandb
 
     from dribblebot.envs.base.legged_robot_config import Cfg
-    from dribblebot.envs.go1.go1_config import config_go1
-    from dribblebot.envs.go1.velocity_tracking import VelocityTrackingEasyEnv
+    from dribblebot.envs.go2.go2_config import config_go2
+    from dribblebot.envs.go2.velocity_tracking import VelocityTrackingEasyEnv
 
     from dribblebot_learn.ppo_cse import Runner
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
@@ -14,15 +15,15 @@ def train_go1(headless=True):
     from dribblebot_learn.ppo_cse.ppo import PPO_Args
     from dribblebot_learn.ppo_cse import RunnerArgs
 
-    config_go1(Cfg)
-    Cfg.env.num_envs = 2000
+    config_go2(Cfg)
+    Cfg.env.num_envs = number_envs  # default: 4096
 
-    RunnerArgs.resume = False   # use pretrain or not
-    RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
-    RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
+    RunnerArgs.resume = resume_flag   # use pretrain or not
+    # RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
+    # RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt'
+    RunnerArgs.resume_checkpoint = '/home/zdj/Codes/dribblebot/runs/improbableailab/dribbling/bvggoq26/dribbling_pretrained/ac_weights.pt'                        # TODO: change this path
 
-
-    Cfg.robot.name = "go1"
+    Cfg.robot.name = "go2"
     Cfg.sensors.sensor_names = [
                         "ObjectSensor",
                         "OrientationSensor",
@@ -71,8 +72,7 @@ def train_go1(headless=True):
     Cfg.control.control_type = "actuator_net"
 
     Cfg.domain_rand.randomize_rigids_after_start = False
-    Cfg.domain_rand.randomize_friction_indep = False
-    Cfg.domain_rand.randomize_friction = False # True
+    # Cfg.domain_rand.randomize_friction_indep = False
     Cfg.domain_rand.randomize_restitution = False # True
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.randomize_base_mass = True
@@ -83,8 +83,8 @@ def train_go1(headless=True):
     Cfg.domain_rand.gravity_impulse_duration = 0.99
     Cfg.domain_rand.randomize_com_displacement = False
     Cfg.domain_rand.com_displacement_range = [-0.15, 0.15]
-    Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
+    # Cfg.domain_rand.randomize_ground_friction = True   
+    # Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
     Cfg.domain_rand.randomize_motor_strength = True
     Cfg.domain_rand.motor_strength_range = [0.99, 1.01]
     Cfg.domain_rand.randomize_motor_offset = True
@@ -98,7 +98,6 @@ def train_go1(headless=True):
 
     Cfg.env.num_observation_history = 15
     Cfg.reward_scales.feet_contact_forces = 0.0
-    Cfg.env.num_envs = 1000
 
     Cfg.commands.exclusive_phase_offset = False
     Cfg.commands.pacing_offset = False
@@ -115,9 +114,10 @@ def train_go1(headless=True):
 
     # domain randomization ranges
     Cfg.domain_rand.rand_interval_s = 6
+    Cfg.domain_rand.randomize_friction = False   # True  # TODO: randomize friction
     Cfg.domain_rand.friction_range = [0.0, 1.5]
-    Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]
+    Cfg.domain_rand.randomize_ground_friction = True     # TODO: randomize ground friction
+    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]   # default: [0.7, 4.0] change2: [0.4, 1.5]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
@@ -128,7 +128,6 @@ def train_go1(headless=True):
     # privileged obs in use
     Cfg.env.num_privileged_obs = 6
     Cfg.env.priv_observe_ball_drag = True
-
 
     # sensory observation
     Cfg.commands.num_commands = 15
@@ -215,25 +214,26 @@ def train_go1(headless=True):
     Cfg.rewards.constrict = False
 
     # reward function
-    Cfg.reward_scales.orientation = -5.0
+    Cfg.reward_scales.orientation = -5.0    # TODO   default: -5.0  change2: -20.0
     Cfg.reward_scales.torques = -0.0001
     Cfg.reward_scales.dof_vel = -0.0001
     Cfg.reward_scales.dof_acc = -2.5e-7
     Cfg.reward_scales.collision = -5.0
     Cfg.reward_scales.action_rate = -0.01
-    Cfg.reward_scales.tracking_contacts_shaped_force = 4.0
+    Cfg.reward_scales.tracking_contacts_shaped_force = 0.0
+    Cfg.reward_scales.tracking_contacts_shaped_force_for_kicking = 4.0
     Cfg.reward_scales.tracking_contacts_shaped_vel = 4.0
     Cfg.reward_scales.dof_pos_limits = -10.0
     Cfg.reward_scales.dof_pos = -0.05
     Cfg.reward_scales.action_smoothness_1 = -0.1
     Cfg.reward_scales.action_smoothness_2 = -0.1
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
-    Cfg.reward_scales.dribbling_robot_ball_pos = 4.0
-    Cfg.reward_scales.dribbling_ball_vel = 4.0
-    Cfg.reward_scales.dribbling_robot_ball_yaw = 4.0
-    Cfg.reward_scales.dribbling_ball_vel_norm = 4.0
+    Cfg.reward_scales.dribbling_robot_ball_pos = 0.0
+    Cfg.reward_scales.dribbling_ball_vel = 0.0
+    Cfg.reward_scales.kicking_ball_vel = 4.0
+    Cfg.reward_scales.dribbling_robot_ball_yaw = 20.0     # TODO  default: 4.0  change2: 20.0
+    Cfg.reward_scales.dribbling_ball_vel_norm = 0.0
     Cfg.reward_scales.dribbling_ball_vel_angle = 4.0
-
     Cfg.reward_scales.tracking_lin_vel = 0.0
     Cfg.reward_scales.tracking_ang_vel = 0.0
     Cfg.reward_scales.lin_vel_z = 0.0
@@ -251,10 +251,10 @@ def train_go1(headless=True):
 
     # normalization
     Cfg.normalization.friction_range = [0, 1]
-    Cfg.normalization.ground_friction_range = [0.7, 4.0]
+    Cfg.normalization.ground_friction_range = [0.7, 4.0]   # TODO default: [0.7, 4.0] change2: [0.4, 1.5]     
     Cfg.terrain.yaw_init_range = 3.14
     Cfg.normalization.clip_actions = 10.0
-
+ 
     # reward function (not in use)
     Cfg.reward_scales.feet_slip = -0.0
     Cfg.reward_scales.jump = 0.0
@@ -269,12 +269,12 @@ def train_go1(headless=True):
 
     RunnerArgs.save_video_interval = 500
 
-    import wandb
     wandb.init(
       # set the wandb project where this run will be logged
+      mode="disabled" if use_wandb is False else "online",
       project="dribbling",
       entity="xander2077",
-      name="Go1FromScratch",
+      name=exp_name,
       # track hyperparameters and run metadata
       config={
       "AC_Args": vars(AC_Args),
@@ -284,10 +284,7 @@ def train_go1(headless=True):
       }
     )
 
-    device = 'cuda:0'
-    # device = 'cpu'
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
-
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
@@ -300,5 +297,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go1(headless=False)
-
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Test", device='cuda:0', number_envs=256)
