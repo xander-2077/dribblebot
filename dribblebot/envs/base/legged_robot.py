@@ -578,7 +578,7 @@ class LeggedRobot(BaseTask):
 
         self._resample_commands(env_ids)
         self._step_contact_targets()
-        if self.cfg.commands.heading_command:
+        if self.cfg.commands.heading_command:  # false
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0]) - self.heading_offsets
             self.commands[:, 2] = torch.clip(0.5 * wrap_to_pi(self.heading_commands - heading), -1., 1.)
@@ -658,8 +658,9 @@ class LeggedRobot(BaseTask):
 
             self.commands[env_ids_in_category, :] = torch.Tensor(new_commands[:, :self.cfg.commands.num_commands]).to(
                 self.device)
-        if self.cfg.commands.num_commands > 5:  # 15, True
-            if self.cfg.commands.gaitwise_curricula:
+            
+        if self.cfg.commands.num_commands > 5:  # 15, True, but all forks are false
+            if self.cfg.commands.gaitwise_curricula:  # false
                 for i, (category, env_ids_in_category) in enumerate(zip(self.category_names, category_env_ids)):
                     if category == "pronk":  # pronking
                         self.commands[env_ids_in_category, 5] = (self.commands[env_ids_in_category, 5] / 2 - 0.25) % 1
@@ -678,7 +679,7 @@ class LeggedRobot(BaseTask):
                         self.commands[env_ids_in_category, 6] = 0
                         self.commands[env_ids_in_category, 7] = self.commands[env_ids_in_category, 7] / 2 + 0.25
 
-            elif self.cfg.commands.exclusive_phase_offset:
+            elif self.cfg.commands.exclusive_phase_offset:  # false
                 random_env_floats = torch.rand(len(env_ids), device=self.device)
                 trotting_envs = env_ids[random_env_floats < 0.34]
                 pacing_envs = env_ids[torch.logical_and(0.34 <= random_env_floats, random_env_floats < 0.67)]
@@ -690,7 +691,7 @@ class LeggedRobot(BaseTask):
                 self.commands[trotting_envs, 7] = 0
                 self.commands[pacing_envs, 7] = 0
 
-            elif self.cfg.commands.balance_gait_distribution:
+            elif self.cfg.commands.balance_gait_distribution:  # false
                 random_env_floats = torch.rand(len(env_ids), device=self.device)
                 pronking_envs = env_ids[random_env_floats <= 0.25]
                 trotting_envs = env_ids[torch.logical_and(0.25 <= random_env_floats, random_env_floats < 0.50)]
@@ -709,7 +710,7 @@ class LeggedRobot(BaseTask):
                 self.commands[pacing_envs, 6] = self.commands[pacing_envs, 6] / 2 + 0.25
                 self.commands[bounding_envs, 7] = self.commands[bounding_envs, 7] / 2 + 0.25
 
-            if self.cfg.commands.binary_phases:
+            if self.cfg.commands.binary_phases:  # false
                 self.commands[env_ids, 5] = (torch.round(2 * self.commands[env_ids, 5])) / 2.0 % 1
                 self.commands[env_ids, 6] = (torch.round(2 * self.commands[env_ids, 6])) / 2.0 % 1
                 self.commands[env_ids, 7] = (torch.round(2 * self.commands[env_ids, 7])) / 2.0 % 1
@@ -738,7 +739,7 @@ class LeggedRobot(BaseTask):
         durations = self.commands[:, 8]
         self.gait_indices = torch.remainder(self.gait_indices + self.dt * frequencies, 1.0)
 
-        if self.cfg.commands.pacing_offset:
+        if self.cfg.commands.pacing_offset:  # false
             foot_indices = [self.gait_indices + phases + offsets + bounds,
                             self.gait_indices + bounds,
                             self.gait_indices + offsets,
@@ -980,8 +981,8 @@ class LeggedRobot(BaseTask):
         constrict_ranges = self.cfg.rewards.constrict_ranges
 
         if self.cfg.rewards.constrict and self.common_step_counter >= self.cfg.rewards.constrict_after:
-            for idx, range in zip(constrict_indices, constrict_ranges):
-                self.commands[env_ids, idx] = range[0]  # TODO: 13, 14
+            for idx, range in zip(constrict_indices, constrict_ranges):  # None
+                self.commands[env_ids, idx] = range[0]
 
     def _teleport_robots(self, env_ids, cfg):
         """ Teleports any robots that are too close to the edge to the other side
@@ -1215,7 +1216,7 @@ class LeggedRobot(BaseTask):
     def _init_command_distribution(self, env_ids):
         # new style curriculum
         self.category_names = ['nominal']
-        if self.cfg.commands.gaitwise_curricula:
+        if self.cfg.commands.gaitwise_curricula:  # false
             self.category_names = ['pronk', 'trot', 'pace', 'bound']
 
         if self.cfg.commands.curriculum_type == "RewardThresholdCurriculum":
@@ -1224,50 +1225,50 @@ class LeggedRobot(BaseTask):
         self.curricula = []
         for category in self.category_names:
             self.curricula += [CurriculumClass(seed=self.cfg.commands.curriculum_seed,
-                                               x_vel=(self.cfg.commands.limit_vel_x[0],
-                                                      self.cfg.commands.limit_vel_x[1],
+                                               x_vel=(self.cfg.commands.limit_vel_x[0],  # -1.5
+                                                      self.cfg.commands.limit_vel_x[1],  # 1.5
                                                       self.cfg.commands.num_bins_vel_x),
-                                               y_vel=(self.cfg.commands.limit_vel_y[0],
-                                                      self.cfg.commands.limit_vel_y[1],
+                                               y_vel=(self.cfg.commands.limit_vel_y[0],  # -1.5
+                                                      self.cfg.commands.limit_vel_y[1],  # 1.5
                                                       self.cfg.commands.num_bins_vel_y),
-                                               yaw_vel=(self.cfg.commands.limit_vel_yaw[0],
-                                                        self.cfg.commands.limit_vel_yaw[1],
+                                               yaw_vel=(self.cfg.commands.limit_vel_yaw[0],  # 0
+                                                        self.cfg.commands.limit_vel_yaw[1],  # 0
                                                         self.cfg.commands.num_bins_vel_yaw),
-                                               body_height=(self.cfg.commands.limit_body_height[0],
-                                                            self.cfg.commands.limit_body_height[1],
+                                               body_height=(self.cfg.commands.limit_body_height[0],  # -0.05
+                                                            self.cfg.commands.limit_body_height[1],  # 0.05
                                                             self.cfg.commands.num_bins_body_height),
-                                               gait_frequency=(self.cfg.commands.limit_gait_frequency[0],
-                                                               self.cfg.commands.limit_gait_frequency[1],
+                                               gait_frequency=(self.cfg.commands.limit_gait_frequency[0],  # 3
+                                                               self.cfg.commands.limit_gait_frequency[1],  # 3
                                                                self.cfg.commands.num_bins_gait_frequency),
-                                               gait_phase=(self.cfg.commands.limit_gait_phase[0],
-                                                           self.cfg.commands.limit_gait_phase[1],
+                                               gait_phase=(self.cfg.commands.limit_gait_phase[0],  # 0.5
+                                                           self.cfg.commands.limit_gait_phase[1],  # 0.5
                                                            self.cfg.commands.num_bins_gait_phase),
-                                               gait_offset=(self.cfg.commands.limit_gait_offset[0],
-                                                            self.cfg.commands.limit_gait_offset[1],
+                                               gait_offset=(self.cfg.commands.limit_gait_offset[0],  # 0
+                                                            self.cfg.commands.limit_gait_offset[1],  # 0
                                                             self.cfg.commands.num_bins_gait_offset),
-                                               gait_bounds=(self.cfg.commands.limit_gait_bound[0],
-                                                            self.cfg.commands.limit_gait_bound[1],
+                                               gait_bounds=(self.cfg.commands.limit_gait_bound[0],  # 0
+                                                            self.cfg.commands.limit_gait_bound[1],  # 0
                                                             self.cfg.commands.num_bins_gait_bound),
-                                               gait_duration=(self.cfg.commands.limit_gait_duration[0],
-                                                              self.cfg.commands.limit_gait_duration[1],
+                                               gait_duration=(self.cfg.commands.limit_gait_duration[0],  # 0.5
+                                                              self.cfg.commands.limit_gait_duration[1],  # 0.5
                                                               self.cfg.commands.num_bins_gait_duration),
-                                               footswing_height=(self.cfg.commands.limit_footswing_height[0],
-                                                                 self.cfg.commands.limit_footswing_height[1],
+                                               footswing_height=(self.cfg.commands.limit_footswing_height[0],  # 0.09
+                                                                 self.cfg.commands.limit_footswing_height[1],  # 0.09
                                                                  self.cfg.commands.num_bins_footswing_height),
-                                               body_pitch=(self.cfg.commands.limit_body_pitch[0],
-                                                           self.cfg.commands.limit_body_pitch[1],
+                                               body_pitch=(self.cfg.commands.limit_body_pitch[0],  # 0
+                                                           self.cfg.commands.limit_body_pitch[1],  # 0
                                                            self.cfg.commands.num_bins_body_pitch),
-                                               body_roll=(self.cfg.commands.limit_body_roll[0],
-                                                          self.cfg.commands.limit_body_roll[1],
+                                               body_roll=(self.cfg.commands.limit_body_roll[0],  # 0
+                                                          self.cfg.commands.limit_body_roll[1],  # 0
                                                           self.cfg.commands.num_bins_body_roll),
-                                               stance_width=(self.cfg.commands.limit_stance_width[0],
-                                                             self.cfg.commands.limit_stance_width[1],
+                                               stance_width=(self.cfg.commands.limit_stance_width[0],  # 0
+                                                             self.cfg.commands.limit_stance_width[1],  # 0.1
                                                              self.cfg.commands.num_bins_stance_width),
-                                               stance_length=(self.cfg.commands.limit_stance_length[0],
-                                                                self.cfg.commands.limit_stance_length[1],
+                                               stance_length=(self.cfg.commands.limit_stance_length[0],  # 0
+                                                                self.cfg.commands.limit_stance_length[1],  # 0.1
                                                                 self.cfg.commands.num_bins_stance_length),
-                                               aux_reward_coef=(self.cfg.commands.limit_aux_reward_coef[0],
-                                                           self.cfg.commands.limit_aux_reward_coef[1],
+                                               aux_reward_coef=(self.cfg.commands.limit_aux_reward_coef[0],  # 0
+                                                           self.cfg.commands.limit_aux_reward_coef[1],  # 0.01
                                                            self.cfg.commands.num_bins_aux_reward_coef),
                                                )]
 
@@ -1275,6 +1276,7 @@ class LeggedRobot(BaseTask):
             for curriculum in self.curricula:
                 curriculum.set_params(lipschitz_threshold=self.cfg.commands.lipschitz_threshold,
                                       binary_phases=self.cfg.commands.binary_phases)
+                
         self.env_command_bins = np.zeros(len(env_ids), dtype=np.int)
         self.env_command_categories = np.zeros(len(env_ids), dtype=np.int)
         low = np.array(

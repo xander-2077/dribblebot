@@ -213,10 +213,10 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.reward_scales.dof_acc = -2.5e-7
     Cfg.reward_scales.collision = -5.0
     Cfg.reward_scales.action_rate = -0.01   # TODO: default: -0.01
-    Cfg.reward_scales.tracking_contacts_shaped_force = 6.0  # TODO: default: 4.0
-    Cfg.reward_scales.tracking_contacts_shaped_vel = 6.0   # TODO: default: 4.0
-    Cfg.reward_scales.dof_pos_limits = -12.0   # TODO: default: -10.0
-    Cfg.reward_scales.dof_pos = -0.05   # TODO: default: -0.05
+    Cfg.reward_scales.tracking_contacts_shaped_force = 4.0  # TODO: default: 4.0
+    Cfg.reward_scales.tracking_contacts_shaped_vel = 4.0   # TODO: default: 4.0
+    Cfg.reward_scales.dof_pos_limits = -10.0   # TODO: default: -10.0
+    Cfg.reward_scales.dof_pos = -0.1   # TODO: default: -0.05
     Cfg.reward_scales.action_smoothness_1 = -0.1
     Cfg.reward_scales.action_smoothness_2 = -0.1
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
@@ -283,7 +283,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     env = VelocityTrackingEasyEnv(sim_device=device, headless=True, cfg=Cfg)
     env = HistoryWrapper(env)
-    runner = Runner(env, device=device)
+    runner = Runner(env, device=device, exp_name=exp_name)
     runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
 
 
@@ -294,4 +294,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2Finetuned", device='cuda:0', number_envs=2000)
+    train_go2(use_wandb=True, resume_flag=True, exp_name="Go2ResumeGo1DofPos", device='cuda:1', number_envs=2000)
