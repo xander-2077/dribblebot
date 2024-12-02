@@ -118,9 +118,12 @@ def load_env(label, headless=False):
     }
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = False
-    # Cfg.control.control_type = "P"
-    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE
+    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE actuator_net or P
     Cfg.env.num_privileged_obs = 6
+    
+    # viewer
+    Cfg.viewer.lookat = [9, 9, 1]
+    Cfg.viewer.pos = [5, 5, 3]
     
     # import inspect, os
     # Cfg_source = inspect.getsource(Cfg)
@@ -165,10 +168,10 @@ def log_to_file(obs, action, filename="record.txt", mode="a"):
             
 def play_go2(headless=True, use_joystick=False, plot=False):
 
-    # label = "improbableailab/dribbling/bvggoq26"
+    label = "improbableailab/dribbling/bvggoq26"
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
-    label = "xander2077/dribbling/cdmgbim9"
+    # label = "xander2077/dribbling/cdmgbim9"
     # label = "xander2077/dribbling/wks8c7nc"
     
     env, policy = load_env(label, headless=headless)
@@ -219,6 +222,8 @@ def play_go2(headless=True, use_joystick=False, plot=False):
     pitch_cmd = 0.0
     roll_cmd = 0.0
     stance_width_cmd = 0.0
+    stance_length_cmd = 0.0
+    aux_reward_cmd = 0.0
 
     # record variables
     measured_x_vels = np.zeros(num_eval_steps)
@@ -258,6 +263,8 @@ def play_go2(headless=True, use_joystick=False, plot=False):
         env.commands[:, 10] = pitch_cmd             # 0.0 * 0.3
         env.commands[:, 11] = roll_cmd              # 0.0 * 0.3
         env.commands[:, 12] = stance_width_cmd      # 0.0
+        env.commands[:, 13] = stance_length_cmd     # 0.0
+        env.commands[:, 14] = aux_reward_cmd        # 0.0
         
         obs, rew, done, info = env.step(actions)
         ep_rew += rew
@@ -324,4 +331,4 @@ def play_go2(headless=True, use_joystick=False, plot=False):
 
 
 if __name__ == '__main__':
-    play_go2(headless=False, use_joystick=False, plot=False)
+    play_go2(headless=False, use_joystick=True, plot=False)
