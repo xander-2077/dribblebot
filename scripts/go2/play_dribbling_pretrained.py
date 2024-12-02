@@ -30,7 +30,6 @@ def load_policy(logdir):
         latent: shape (num_envs, 6)
         action: shape (num_envs, 12)
         """
-        i = 0
         latent = adaptation_module.forward(obs["obs_history"].to('cpu'))
         action = body.forward(torch.cat((obs["obs_history"].to('cpu'), latent), dim=-1))
         info['latent'] = latent
@@ -118,7 +117,7 @@ def load_env(label, headless=False):
     }
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = False
-    Cfg.control.control_type = "actuator_net"  # TODO: CHANGE CONTROL TYPE actuator_net or P
+    Cfg.control.control_type = "P"  # TODO: CHANGE CONTROL TYPE actuator_net or P
     Cfg.env.num_privileged_obs = 6
     
     # viewer
@@ -168,14 +167,14 @@ def log_to_file(obs, action, filename="record.txt", mode="a"):
             
 def play_go2(headless=True, use_joystick=False, plot=False):
 
-    label = "improbableailab/dribbling/bvggoq26"
+    # label = "improbableailab/dribbling/bvggoq26"
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
     # label = "xander2077/dribbling/cdmgbim9"
-    # label = "xander2077/dribbling/wks8c7nc"
+    label = "xander2077/dribbling/wks8c7nc"
     
     env, policy = load_env(label, headless=headless)
-    num_eval_steps = 5000  # default: 5000
+    num_eval_steps = 500  # default: 5000
     
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
@@ -214,7 +213,7 @@ def play_go2(headless=True, use_joystick=False, plot=False):
             "START": 7,
         }
     
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, -1.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])
@@ -231,7 +230,6 @@ def play_go2(headless=True, use_joystick=False, plot=False):
     joint_positions = np.zeros((num_eval_steps, 12))
     
     action_list = np.zeros((num_eval_steps, 12))
-    joint_pos_target = np.zeros((num_eval_steps, 12))
     
     # # if to use the stored observation
     # store_obs = np.load("record/store_obs.npy")
@@ -240,7 +238,6 @@ def play_go2(headless=True, use_joystick=False, plot=False):
     obs = env.reset()
     ep_rew = 0
     for i in tqdm(range(num_eval_steps)):
-        
         # # If to use the stored observation
         # obs["obs_history"] = store_obs_tensor[i].unsqueeze(0)
         
@@ -281,11 +278,46 @@ def play_go2(headless=True, use_joystick=False, plot=False):
             
             out_of_limits = -(env.dof_pos - env.dof_pos_limits[:, 0]).clip(max=0.)  # lower limit
             out_of_limits += (env.dof_pos - env.dof_pos_limits[:, 1]).clip(min=0.)  # upper limit
-    
+        
     if plot:
-        # plot joint positions and actions
+        default_joint_order = [
+            'FL_hip_joint', 'FL_thigh_joint', 'FL_calf_joint', 
+            'FR_hip_joint', 'FR_thigh_joint', 'FR_calf_joint', 
+            'RL_hip_joint', 'RL_thigh_joint', 'RL_calf_joint', 
+            'RR_hip_joint', 'RR_thigh_joint', 'RR_calf_joint'
+        ]
+        
+        plot_order = [
+            'FL_hip_joint', 'FR_hip_joint', 'RL_hip_joint', 'RR_hip_joint',
+            'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
+            'FL_calf_joint', 'FR_calf_joint', 'RL_calf_joint', 'RR_calf_joint'
+        ]
+        
+        default_joint_angles = {
+            'FL_hip_joint': 0.1,
+            'RL_hip_joint': 0.1,
+            'FR_hip_joint': -0.1,
+            'RR_hip_joint': -0.1,
+            'FL_thigh_joint': 0.8,
+            'RL_thigh_joint': 1.0,
+            'FR_thigh_joint': 0.8,
+            'RR_thigh_joint': 1.0,
+            'FL_calf_joint': -1.5,
+            'RL_calf_joint': -1.5,
+            'FR_calf_joint': -1.5,
+            'RR_calf_joint': -1.5
+        }
+        default_joint_pos = np.zeros_like(action_list)
+        for k, v in default_joint_angles.items():
+            default_joint_pos[:, default_joint_order.index(k)] = v
+
         action_list = action_list * 0.25
         action_list[:, [0, 3, 6, 9]] *= 0.5
+        
+        joint_pos_target = np.zeros_like(action_list)
+        joint_pos_target = action_list + default_joint_pos
+        
+        joint_positions = joint_positions + default_joint_pos
 
         time = np.linspace(0, num_eval_steps * env.dt, num_eval_steps)
         fig, axes = plt.subplots(3, 4, figsize=(15, 10))
@@ -296,20 +328,29 @@ def play_go2(headless=True, use_joystick=False, plot=False):
             col = i % 4
             ax = axes[row, col]
             
-            ax.plot(time, action_list[:, i], linestyle="-", label="Action", color="b")
-            ax.plot(time, joint_positions[:, i], linestyle="--", label="Joint Position", color="r")
-            # ax.plot(time, joint_pos_target[:, i], linestyle="-.", label="Joint Pos Target", color="g")
-            ax.set_title(f"Joint {i}")
+            joint_name = plot_order[i]
+            actual_index = default_joint_order.index(joint_name)
+
+            # ax.plot(time, action_list[:, actual_index], linestyle="-", label="Action", color="b")
+            # ax.plot(time, joint_positions[:, actual_index], linestyle="--", label="Joint Position", color="r")        
+            ax.plot(time, joint_pos_target[:, actual_index], linestyle="-", label="Joint Pos Target", color="b")
+            ax.plot(time, joint_positions[:, actual_index], linestyle="--", label="Joint Position", color="r")
+
+            default_angle = default_joint_angles[joint_name]
+            ax.axhline(y=default_angle, color='g', linestyle=':', label='Default Position')
+
+            ax.set_title(joint_name.rstrip('_joint').replace('_', ' '))
             ax.set_xlabel("Time")
             ax.set_ylabel("Value")
             ax.legend()
 
-        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
         plt.show()
+
     
-    # save data
-    np.save("./record/action_list", action_list, allow_pickle=False)
-    np.save("./record/joint_positions", joint_positions, allow_pickle=False)
+    # # save data
+    # np.save("./record/action_list", action_list, allow_pickle=False)
+    # np.save("./record/joint_positions", joint_positions, allow_pickle=False)
     
     if plot:
         # plot target and measured forward velocity
@@ -331,4 +372,4 @@ def play_go2(headless=True, use_joystick=False, plot=False):
 
 
 if __name__ == '__main__':
-    play_go2(headless=False, use_joystick=True, plot=False)
+    play_go2(headless=False, use_joystick=False, plot=True)
