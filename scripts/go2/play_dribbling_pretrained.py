@@ -333,8 +333,8 @@ def play_go2(headless=True, use_joystick=False, plot=False):
 
             # ax.plot(time, action_list[:, actual_index], linestyle="-", label="Action", color="b")
             # ax.plot(time, joint_positions[:, actual_index], linestyle="--", label="Joint Position", color="r")        
-            ax.plot(time, joint_pos_target[:, actual_index], linestyle="-", label="Joint Pos Target", color="b")
-            ax.plot(time, joint_positions[:, actual_index], linestyle="--", label="Joint Position", color="r")
+            ax.plot(time, joint_pos_target[:, actual_index], linestyle="--", label="Joint Pos Target", color="r")
+            ax.plot(time, joint_positions[:, actual_index], linestyle="-", label="Joint Position", color="b")
 
             default_angle = default_joint_angles[joint_name]
             ax.axhline(y=default_angle, color='g', linestyle=':', label='Default Position')
