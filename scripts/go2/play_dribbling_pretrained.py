@@ -171,7 +171,9 @@ def play_go2(headless=True, use_joystick=False, plot=False):
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
     # label = "xander2077/dribbling/cdmgbim9"
-    label = "xander2077/dribbling/wks8c7nc"
+    # label = "xander2077/dribbling/wks8c7nc"
+    # label = "xander2077/dribbling/2o9rndfb"
+    label = "xander2077/dribbling/v5uq6hjm"
     
     env, policy = load_env(label, headless=headless)
     num_eval_steps = 500  # default: 5000
