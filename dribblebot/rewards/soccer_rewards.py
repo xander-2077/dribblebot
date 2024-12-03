@@ -30,6 +30,10 @@ class SoccerRewards(Rewards):
 
     def load_env(self, env):
         self.env = env
+        
+    def _reward_rare_dof_pos(self):
+        # 两条后腿的6个关节应该保持在相对默认关节位置变化幅度较小的区间
+        return torch.sum(torch.square(self.env.dof_pos[:, 6:] - self.env.default_dof_pos[:, 6:]), dim=1)
 
     def _reward_orientation(self):   # √
         # Penalize non flat base orientation

@@ -216,9 +216,7 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
     Cfg.reward_scales.tracking_contacts_shaped_force = 4.0  # TODO: default: 4.0
     Cfg.reward_scales.tracking_contacts_shaped_vel = 4.0   # TODO: default: 4.0
     Cfg.reward_scales.dof_pos_limits = -10.0   # TODO: default: -10.0
-    Cfg.reward_scales.dof_pos = -0.1   # TODO: default: -0.05
-    Cfg.reward_scales.action_smoothness_1 = -0.1
-    Cfg.reward_scales.action_smoothness_2 = -0.1
+    Cfg.reward_scales.dof_pos = -0.05   # TODO: default: -0.05
     Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
     Cfg.reward_scales.dribbling_robot_ball_pos = 4.0
     Cfg.reward_scales.dribbling_ball_vel = 4.0
@@ -234,6 +232,8 @@ def train_go2(use_wandb=False, resume_flag=False, exp_name="", device='cuda:0', 
 
     Cfg.reward_scales.action_smoothness_1 = -0.1    # TODO: default: -0.1
     Cfg.reward_scales.action_smoothness_2 = -0.1    # TODO: default: -0.1
+    
+    Cfg.reward_scales.rare_dof_pos = -1.0   # TODO
     
     Cfg.rewards.kappa_gait_probs = 0.07
     Cfg.rewards.gait_force_sigma = 100.
@@ -294,4 +294,4 @@ if __name__ == '__main__':
     stem = Path(__file__).stem
     
     # to see the environment rendering, set headless=False
-    train_go2(use_wandb=True, resume_flag=True, exp_name="Go2ResumeGo1DofPos", device='cuda:1', number_envs=2000)
+    train_go2(use_wandb=True, resume_flag=False, exp_name="Go2RareDofPos", device='cuda:1', number_envs=2000)
