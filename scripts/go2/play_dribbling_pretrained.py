@@ -165,10 +165,10 @@ def log_to_file(obs, action, filename="record.txt", mode="a"):
             
 def play_go2(headless=True, use_joystick=False, plot=False):
 
-    # label = "improbableailab/dribbling/bvggoq26"
+    label = "improbableailab/dribbling/bvggoq26"
     # label = "xander2077/dribbling/0bzdzy6s"
     # label = "xander2077/dribbling/smdr6ns9"
-    label = "xander2077/dribbling/cdmgbim9"
+    # label = "xander2077/dribbling/cdmgbim9"
     # label = "xander2077/dribbling/wks8c7nc"
     
     env, policy = load_env(label, headless=headless)
@@ -324,4 +324,4 @@ def play_go2(headless=True, use_joystick=False, plot=False):
 
 
 if __name__ == '__main__':
-    play_go2(headless=False, use_joystick=False, plot=False)
+    play_go2(headless=False, use_joystick=True, plot=False)
