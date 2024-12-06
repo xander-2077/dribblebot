@@ -5,11 +5,35 @@ from isaacgym.torch_utils import *
 from .rewards import Rewards
 
 class SoccerRewards(Rewards):
+    """
+    - _reward_orientation: 惩罚机器人底座的非水平姿态，鼓励机器人保持水平。
+    - _reward_torques: 惩罚机器人关节的扭矩，鼓励机器人使用较小的扭矩。
+    - _reward_dof_vel: 惩罚机器人关节的速度，鼓励机器人保持较低的关节速度。
+    - _reward_dof_acc: 惩罚机器人关节的加速度，鼓励机器人保持较低的关节加速度。
+    - _reward_collision: 惩罚机器人特定部位的碰撞，鼓励机器人避免不必要的碰撞。
+    - _reward_action_rate: 惩罚动作的变化，鼓励机器人动作的平滑性。
+    - _reward_tracking_contacts_shaped_force: 惩罚与期望步态不同的足底接触力，鼓励机器人按照期望步态行走。
+    - _reward_tracking_contacts_shaped_vel: 惩罚与期望步态不同的足底速度，鼓励机器人按照期望步态行走。
+    - _reward_dof_pos_limits: 惩罚关节位置接近限制，鼓励机器人保持关节位置在安全范围内。
+    - _reward_dof_pos: 惩罚关节位置偏离默认位置，鼓励机器人保持关节位置接近默认位置。
+    - _reward_action_smoothness_1: 惩罚动作的变化，鼓励机器人动作的平滑性。
+    - _reward_action_smoothness_2: 惩罚动作的变化，鼓励机器人动作的平滑性。
+    - _reward_dribbling_robot_ball_vel: 鼓励机器人速度与机器人身体到球的向量对齐，鼓励机器人按照期望速度移动。
+    - _reward_dribbling_robot_ball_pos: 鼓励机器人靠近球，鼓励机器人保持靠近球的位置。
+    - _reward_dribbling_ball_vel: 鼓励球的速度与目标速度对齐，鼓励球按照期望速度移动。
+    - _reward_dribbling_robot_ball_yaw: 鼓励机器人与球的方向对齐，鼓励机器人保持与球的方向一致。
+    - _reward_dribbling_ball_vel_norm: 鼓励球的速度幅值与目标速度幅值对齐，鼓励球按照期望速度幅值移动。
+    - _reward_dribbling_ball_vel_angle: 鼓励球的速度方向与目标速度方向对齐，鼓励球按照期望速度方向移动。
+    """
     def __init__(self, env):
         self.env = env
 
     def load_env(self, env):
         self.env = env
+        
+    def _reward_rare_dof_pos(self):
+        # 两条后腿的6个关节应该保持在相对默认关节位置变化幅度较小的区间
+        return torch.sum(torch.square(self.env.dof_pos[:, 6:] - self.env.default_dof_pos[:, 6:]), dim=1)
 
     def _reward_orientation(self):   # √
         # Penalize non flat base orientation

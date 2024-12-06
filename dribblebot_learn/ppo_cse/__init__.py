@@ -67,11 +67,12 @@ class RunnerArgs(PrefixProto, cli=False):
 
 class Runner:
 
-    def __init__(self, env, device="cpu"):
+    def __init__(self, env, device="cpu", exp_name="default"):
         from .ppo import PPO
 
         self.device = device
         self.env = env
+        self.exp_name = exp_name
 
         actor_critic = ActorCritic(
             self.env.num_obs,
@@ -298,7 +299,7 @@ class Runner:
             if it % RunnerArgs.save_interval == 0:
                 print(f"Saving model at iteration {it}")
 
-                path = "./tmp/legged_data"
+                path = f"./tmp/{self.exp_name}"
                 os.makedirs(path, exist_ok=True)
 
                 ac_weight_path = f"{path}/ac_weights_{it}.pt"
@@ -335,12 +336,12 @@ class Runner:
                 ac_weights_path = f"{path}/ac_weights_latest.pt"
                 torch.save(self.alg.actor_critic.state_dict(), ac_weights_path)
 
-                wandb.save(f"./tmp/legged_data/adaptation_module_{it}.jit")
-                wandb.save(f"./tmp/legged_data/body_{it}.jit")
-                wandb.save(f"./tmp/legged_data/ac_weights_{it}.pt")
-                wandb.save(f"./tmp/legged_data/adaptation_module_latest.jit")
-                wandb.save(f"./tmp/legged_data/body_latest.jit")
-                wandb.save(f"./tmp/legged_data/ac_weights_latest.pt")
+                wandb.save(f"{path}/adaptation_module_{it}.jit")
+                wandb.save(f"{path}/body_{it}.jit")
+                wandb.save(f"{path}/ac_weights_{it}.pt")
+                wandb.save(f"{path}/adaptation_module_latest.jit")
+                wandb.save(f"{path}/body_latest.jit")
+                wandb.save(f"{path}/ac_weights_latest.pt")
 
             self.current_learning_iteration += 1
 

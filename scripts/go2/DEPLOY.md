@@ -30,21 +30,20 @@ radar: 0.28945 0 -0.046825
 self.env.commands * self.env.commands_scale
 0: x_vel  scale: 2.0
 1: y_vel  scale: 2.0
-2: yaw_vel  default: 0.0  scale: 0.25
-3: body_height  default: 0.0  scale: 2.0
+2: yaw_vel  default: 0.0  scale: 0.25  
+3: body_height  default: 0.0  scale: 2.0  X
 4: step_frequency  default: 3.0  scale: 1.0
 5,6,7: gaits = {"pronking": [0, 0, 0],
                 "trotting": [0.5, 0, 0],
                 "bounding": [0, 0.5, 0],
                 "pacing": [0, 0, 0.5]}    default: trotting  scale: 1.0
-8: default: 0.5  scale: 1.0
-9: footswing_height    default: 0.09  scale: 0.15
-10: pitch  default: 0.0  scale: 0.3
-11: roll  default: 0.0   scale: 0.3
-12: stance_width  default: 0.0   scale: 1.0
-# 13和14的数值看起来都非常小
-13: stance_length     scale: 1.0
-14: aux_reward     scale: 1.0
+8: gait_duration   default: 0.5  scale: 1.0
+9: footswing_height    default: 0.09  scale: 0.15  X
+10: pitch  default: 0.0  scale: 0.3  X
+11: roll  default: 0.0   scale: 0.3  X
+12: stance_width  default: 0.0   scale: 1.0  X
+13: stance_length     scale: 1.0  X
+14: aux_reward     scale: 1.0  X
 
 commands 全零初始化
 _resample_commands():
